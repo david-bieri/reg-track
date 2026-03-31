@@ -1,1 +1,435 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>RegTrack — U.S. Regulatory &amp; Legislative Tracker</title>
+<script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital@1&family=JetBrains+Mono:wght@400;600&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
+<style>
+/* ── design tokens ─────────────────────────────── */
+:root {
+  --font-brand: 'Spectral', serif;
+  --font-mono:  'JetBrains Mono', monospace;
+  --font-ui:    'DM Sans', system-ui, sans-serif;
 
+  --c-bg:       #f8f7f4;
+  --c-surface:  #ffffff;
+  --c-border:   #e2e0db;
+  --c-text:     #1a1a1a;
+  --c-text-2:   #6b6860;
+  --c-accent:   #2563eb;
+  --c-accent-2: #1d4ed8;
+  --c-tag-bg:   #eff6ff;
+  --c-tag-text: #1e40af;
+  --c-danger:   #dc2626;
+  --c-success:  #16a34a;
+  --c-warn:     #d97706;
+  --c-nav-bg:   rgba(248,247,244,.82);
+  --c-footer-bg:rgba(248,247,244,.85);
+  --radius:     8px;
+  --shadow-sm:  0 1px 2px rgba(0,0,0,.06);
+  --shadow-md:  0 4px 12px rgba(0,0,0,.08);
+}
+
+[data-theme="dark"] {
+  --c-bg:       #141413;
+  --c-surface:  #1e1e1c;
+  --c-border:   #2e2e2b;
+  --c-text:     #e8e6e1;
+  --c-text-2:   #9b978f;
+  --c-accent:   #60a5fa;
+  --c-accent-2: #93bbfd;
+  --c-tag-bg:   #1e293b;
+  --c-tag-text: #93c5fd;
+  --c-nav-bg:   rgba(20,20,19,.82);
+  --c-footer-bg:rgba(20,20,19,.85);
+  --shadow-sm:  0 1px 2px rgba(0,0,0,.2);
+  --shadow-md:  0 4px 12px rgba(0,0,0,.3);
+}
+
+/* ── reset & base ──────────────────────────────── */
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-behavior:smooth; }
+body {
+  font-family: var(--font-ui);
+  background: var(--c-bg);
+  color: var(--c-text);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── nav ───────────────────────────────────────── */
+.rt-nav {
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px; height: 52px;
+  background: var(--c-nav-bg);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--c-border);
+  transition: box-shadow .2s;
+}
+.rt-nav.scrolled { box-shadow: var(--shadow-md); }
+.rt-nav-brand {
+  font-family: var(--font-brand);
+  font-style: italic;
+  font-size: 1.25rem;
+  color: var(--c-text);
+  text-decoration: none;
+  user-select: none;
+}
+.rt-nav-brand span { color: var(--c-accent); }
+.rt-nav-right { display:flex; align-items:center; gap:12px; }
+.rt-theme-btn {
+  background: none; border: 1px solid var(--c-border);
+  border-radius: 50%; width: 32px; height: 32px;
+  cursor: pointer; font-size: .85rem;
+  color: var(--c-text-2);
+  display: flex; align-items: center; justify-content: center;
+  transition: border-color .15s;
+}
+.rt-theme-btn:hover { border-color: var(--c-accent); }
+
+/* ── tab bar ───────────────────────────────────── */
+.rt-tabs {
+  position: sticky; top: 52px; z-index: 90;
+  display: flex; gap: 0;
+  padding: 0 24px;
+  background: var(--c-nav-bg);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--c-border);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.rt-tabs::-webkit-scrollbar { display:none; }
+.rt-tab {
+  padding: 10px 18px;
+  font-size: .82rem;
+  font-weight: 500;
+  color: var(--c-text-2);
+  background: none; border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color .15s, border-color .15s;
+  font-family: var(--font-ui);
+}
+.rt-tab:hover { color: var(--c-text); }
+.rt-tab.active {
+  color: var(--c-accent);
+  border-bottom-color: var(--c-accent);
+}
+
+/* ── main content ──────────────────────────────── */
+.rt-main {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 28px 24px 100px;
+}
+.rt-panel {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+}
+.rt-panel + .rt-panel { margin-top: 16px; }
+.rt-panel-title {
+  font-family: var(--font-mono);
+  font-size: .78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--c-text-2);
+  margin-bottom: 16px;
+}
+.rt-empty {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  min-height: 220px;
+  color: var(--c-text-2);
+  font-size: .88rem;
+  gap: 8px;
+}
+.rt-empty i { font-size: 1.6rem; opacity: .45; }
+
+/* ── grid helper ───────────────────────────────── */
+.rt-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 16px;
+}
+
+/* ── status badge ──────────────────────────────── */
+.rt-badge {
+  display: inline-flex; align-items: center;
+  padding: 2px 10px;
+  font-size: .72rem; font-weight: 600;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+}
+.rt-badge--info  { background: var(--c-tag-bg); color: var(--c-tag-text); }
+.rt-badge--ok    { background: #dcfce7; color: #166534; }
+.rt-badge--warn  { background: #fef9c3; color: #854d0e; }
+.rt-badge--err   { background: #fee2e2; color: #991b1b; }
+[data-theme="dark"] .rt-badge--ok   { background:#14532d; color:#86efac; }
+[data-theme="dark"] .rt-badge--warn { background:#422006; color:#fde047; }
+[data-theme="dark"] .rt-badge--err  { background:#450a0a; color:#fca5a5; }
+
+/* ── footer ────────────────────────────────────── */
+.rt-footer {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px; height: 40px;
+  background: var(--c-footer-bg);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid var(--c-border);
+  font-size: .72rem;
+  color: var(--c-text-2);
+}
+.rt-footer a {
+  color: var(--c-text-2);
+  text-decoration: none;
+  margin-left: 14px;
+  transition: color .15s;
+}
+.rt-footer a:hover { color: var(--c-accent); }
+
+/* ── responsive ────────────────────────────────── */
+@media(max-width:640px) {
+  .rt-nav  { padding:0 14px; }
+  .rt-tabs { padding:0 14px; }
+  .rt-main { padding:20px 14px 100px; }
+  .rt-grid { grid-template-columns:1fr; }
+  .rt-tab  { padding:10px 12px; font-size:.78rem; }
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useReducer, useMemo, useCallback } = React;
+
+/* ── tabs config ───────────────────────────────── */
+const TABS = [
+  { id: 'dashboard', label: 'Dashboard',     icon: 'fa-chart-line' },
+  { id: 'bills',     label: 'Bills',         icon: 'fa-file-lines' },
+  { id: 'rules',     label: 'Rules',         icon: 'fa-gavel' },
+  { id: 'agencies',  label: 'Agencies',      icon: 'fa-building-columns' },
+  { id: 'timeline',  label: 'Timeline',      icon: 'fa-clock-rotate-left' },
+  { id: 'compare',   label: 'Compare',       icon: 'fa-code-compare' },
+];
+
+/* ── state ─────────────────────────────────────── */
+const INITIAL_STATE = {
+  tab: 'dashboard',
+};
+
+function reducer(state, action) {
+  switch (action.type) {
+    case 'SET_TAB': return { ...state, tab: action.payload };
+    default:        return state;
+  }
+}
+
+/* ── tab panels (empty shells) ─────────────────── */
+
+function DashboardTab() {
+  return (
+    <div className="rt-grid">
+      <div className="rt-panel">
+        <div className="rt-panel-title">Legislative Activity</div>
+        <div className="rt-empty">
+          <i className="fa-solid fa-chart-line"></i>
+          <span>Data not yet connected</span>
+        </div>
+      </div>
+      <div className="rt-panel">
+        <div className="rt-panel-title">Regulatory Pipeline</div>
+        <div className="rt-empty">
+          <i className="fa-solid fa-filter"></i>
+          <span>Data not yet connected</span>
+        </div>
+      </div>
+      <div className="rt-panel">
+        <div className="rt-panel-title">Recent Updates</div>
+        <div className="rt-empty">
+          <i className="fa-solid fa-bell"></i>
+          <span>Data not yet connected</span>
+        </div>
+      </div>
+      <div className="rt-panel">
+        <div className="rt-panel-title">Key Metrics</div>
+        <div className="rt-empty">
+          <i className="fa-solid fa-gauge-high"></i>
+          <span>Data not yet connected</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BillsTab() {
+  return (
+    <div className="rt-panel">
+      <div className="rt-panel-title">Bill Tracker</div>
+      <div className="rt-empty">
+        <i className="fa-solid fa-file-lines"></i>
+        <span>Bills table will appear here</span>
+      </div>
+    </div>
+  );
+}
+
+function RulesTab() {
+  return (
+    <div className="rt-panel">
+      <div className="rt-panel-title">Rulemaking Tracker</div>
+      <div className="rt-empty">
+        <i className="fa-solid fa-gavel"></i>
+        <span>Federal Register rules will appear here</span>
+      </div>
+    </div>
+  );
+}
+
+function AgenciesTab() {
+  return (
+    <div className="rt-panel">
+      <div className="rt-panel-title">Agency Overview</div>
+      <div className="rt-empty">
+        <i className="fa-solid fa-building-columns"></i>
+        <span>Agency data will appear here</span>
+      </div>
+    </div>
+  );
+}
+
+function TimelineTab() {
+  return (
+    <div className="rt-panel">
+      <div className="rt-panel-title">Legislative &amp; Regulatory Timeline</div>
+      <div className="rt-empty">
+        <i className="fa-solid fa-clock-rotate-left"></i>
+        <span>Timeline visualization will appear here</span>
+      </div>
+    </div>
+  );
+}
+
+function CompareTab() {
+  return (
+    <div className="rt-panel">
+      <div className="rt-panel-title">Bill Comparison</div>
+      <div className="rt-empty">
+        <i className="fa-solid fa-code-compare"></i>
+        <span>Side-by-side comparison will appear here</span>
+      </div>
+    </div>
+  );
+}
+
+const TAB_COMPONENTS = {
+  dashboard: DashboardTab,
+  bills:     BillsTab,
+  rules:     RulesTab,
+  agencies:  AgenciesTab,
+  timeline:  TimelineTab,
+  compare:   CompareTab,
+};
+
+/* ── app shell ─────────────────────────────────── */
+
+function App() {
+  const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 2);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  const setTab = useCallback((id) => {
+    dispatch({ type: 'SET_TAB', payload: id });
+  }, []);
+
+  const ActivePanel = TAB_COMPONENTS[state.tab] || DashboardTab;
+
+  return (
+    <>
+      {/* nav */}
+      <nav className={`rt-nav${scrolled ? ' scrolled' : ''}`}>
+        <a className="rt-nav-brand" href="#">
+          Reg<span>Track</span>
+        </a>
+        <div className="rt-nav-right">
+          <span className="rt-badge rt-badge--info">shell</span>
+          <button className="rt-theme-btn" id="themeToggle" aria-label="Toggle theme">&#x25D1;</button>
+        </div>
+      </nav>
+
+      {/* tabs */}
+      <div className="rt-tabs">
+        {TABS.map(t => (
+          <button
+            key={t.id}
+            className={`rt-tab${state.tab === t.id ? ' active' : ''}`}
+            onClick={() => setTab(t.id)}
+          >
+            <i className={`fa-solid ${t.icon}`} style={{ marginRight: 6 }}></i>
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* content */}
+      <main className="rt-main">
+        <ActivePanel />
+      </main>
+
+      {/* footer */}
+      <footer className="rt-footer">
+        <span style={{ fontFamily: 'var(--font-brand)', fontStyle: 'italic' }}>
+          RegTrack &middot; For educational and research purposes only
+        </span>
+        <div>
+          <a href="https://github.com/davidbieri/reg-track" target="_blank" rel="noopener">
+            <i className="fa-brands fa-github"></i>
+          </a>
+        </div>
+      </footer>
+    </>
+  );
+}
+
+/* ── mount ─────────────────────────────────────── */
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+</script>
+
+<!-- theme toggle (vanilla, outside Babel) -->
+<script>
+(function() {
+  const KEY = 'rt-theme';
+  const html = document.documentElement;
+  const stored = localStorage.getItem(KEY);
+  if (stored) html.setAttribute('data-theme', stored);
+
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('#themeToggle');
+    if (!btn) return;
+    const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    localStorage.setItem(KEY, next);
+    btn.textContent = next === 'dark' ? '\u25D0' : '\u25D1';
+  });
+})();
+</script>
+</body>
+</html>
