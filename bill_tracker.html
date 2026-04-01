@@ -449,6 +449,9 @@ const TimelineRow = ({ entry: e, expanded, onToggle, editMode, onUpdate }) => {
   );
 };
 
+/* ── persistence ───────────────────────────────── */
+const STORAGE_KEY = 'reg-track-v1';
+
 /* ── app ───────────────────────────────────────── */
 const App = () => {
   const [activeTab, setActiveTab] = React.useState('bills');
@@ -460,13 +463,129 @@ const App = () => {
   const [expandedTl, setExpandedTl] = React.useState(null);
   const [billFilter, setBillFilter] = React.useState({ cat:'all', party:'all', q:'' });
   const [tlFilter, setTlFilter] = React.useState({ agency:'all', action:'all', q:'' });
+  const [refreshing, setRefreshing] = React.useState(false);
+  const [log, setLog] = React.useState('');
+
+  /* persistence helpers */
+  const saveToStorage = React.useCallback((b, t) => {
+    try {
+      const ts2 = new Date().toLocaleString('en-US', {
+        month: 'long', day: 'numeric', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        bills: b, timeline: t, ts: ts2
+      }));
+      setTs(ts2);
+    } catch (e) { console.warn('Storage write failed:', e); }
+  }, []);
+
+  React.useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const { bills: b, timeline: t, ts: savedTs } = JSON.parse(raw);
+        if (b?.length) setBills(b);
+        if (t?.length) setTimeline(t);
+        if (savedTs) setTs(savedTs);
+      }
+    } catch (e) { console.warn('Storage read failed:', e); }
+  }, []);
 
   const updateBill = (id, field, value) => {
-    setBills(prev => prev.map(b => b.id === id ? { ...b, [field]: value } : b));
+    setBills(prev => {
+      const next = prev.map(b => b.id === id ? { ...b, [field]: value } : b);
+      saveToStorage(next, timeline);
+      return next;
+    });
   };
 
   const updateTl = (id, field, value) => {
-    setTimeline(prev => prev.map(e => e.id === id ? { ...e, [field]: value } : e));
+    setTimeline(prev => {
+      const next = prev.map(e => e.id === id ? { ...e, [field]: value } : e);
+      saveToStorage(bills, next);
+      return next;
+    });
+  };
+
+  /* Anthropic API refresh */
+  const doRefresh = async () => {
+    setRefreshing(true);
+    setLog(`Searching for latest ${activeTab === 'bills'
+      ? 'bill' : 'regulatory'} updates...`);
+
+    const prompt = activeTab === 'bills'
+      ? `Search for the very latest news today on US Congressional prediction market legislation. Currently tracking: ${bills.map(b => `[${b.id}] "${b.title}"`).join(', ')}. Find: (1) any new bills introduced, (2) status changes on existing bills (e.g. advanced to committee). Respond ONLY with compact valid JSON — no markdown, no backticks, no preamble: {"updates":[{"id":"S.1234","status":"Committee","notes":"Advanced to Senate Ag Committee"}],"newBills":[{"introduced":"2026-04-01","title":"...","id":"S.9999","chamber":"Senate","party":"R","sponsor":"...","category":"Prediction Markets","summary":"one clear sentence","teeth":"key enforcement detail","detail":"full text","status":"Introduced"}],"summary":"2-3 sentences on what changed today."}`
+      : `Search for the very latest prediction market regulatory actions today from CFTC, Fed, DOJ, SEC, or state regulators. Currently tracking: ${timeline.map(e => `[${e.id}] "${e.title}"`).join(', ')}. Find: any new agency actions, enforcement cases, research papers, litigation, or speeches since the last entry. Respond ONLY with compact valid JSON — no markdown, no backticks: {"newEntries":[{"date":"2026-04-01","agency":"CFTC","action":"Guidance","title":"...","detail":"2-3 sentences"}],"summary":"2-3 sentences on what is new."}`;
+
+    try {
+      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 2000,
+          tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+      const data = await resp.json();
+      const text = (data.content || [])
+        .filter(b => b.type === 'text').map(b => b.text).join('');
+      const m = text.match(/\{[\s\S]*\}/);
+      if (m) {
+        const result = JSON.parse(m[0]);
+        if (activeTab === 'bills') {
+          setBills(prev => {
+            let next = [...prev];
+            if (result.updates?.length) {
+              next = next.map(b => {
+                const u = result.updates.find(u => u.id === b.id);
+                return u ? {
+                  ...b,
+                  status: u.status || b.status,
+                  notes: u.notes
+                    ? (b.notes ? b.notes + ' | ' + u.notes : u.notes)
+                    : b.notes
+                } : b;
+              });
+            }
+            if (result.newBills?.length) {
+              const fresh = result.newBills.map((nb, i) => ({
+                ...nb,
+                id: nb.id || `NEW-${Date.now()}-${i}`,
+                isNew: true
+              }));
+              next = [...fresh, ...next];
+            }
+            saveToStorage(next, timeline);
+            return next;
+          });
+        } else {
+          if (result.newEntries?.length) {
+            setTimeline(prev => {
+              const maxId = Math.max(
+                ...prev.map(e => parseInt(e.id.replace('tl-','')) || 0));
+              const fresh = result.newEntries.map((ne, i) => ({
+                ...ne,
+                id: `tl-${maxId + i + 1}`,
+                isNew: true,
+                notes: ''
+              }));
+              const next = [...fresh, ...prev];
+              saveToStorage(bills, next);
+              return next;
+            });
+          }
+        }
+        setLog(result.summary || 'Search complete.');
+      } else {
+        setLog('Search complete — no structured changes found.');
+      }
+    } catch (err) {
+      setLog(`Refresh error: ${err.message}`);
+    }
+    setRefreshing(false);
   };
 
   const filteredTl = timeline.filter(e => {
@@ -594,9 +713,29 @@ const App = () => {
               <option value="Bipartisan">Bipartisan only</option>
             </select>
             <div style={{marginLeft:'auto',display:'flex',gap:6}}>
+              <button onClick={doRefresh} disabled={refreshing}
+                style={{fontSize:12,padding:'5px 14px',borderRadius:6,
+                  backgroundColor: refreshing ? 'var(--bg-secondary)' : 'var(--navy)',
+                  color: refreshing ? 'var(--mid-gray)' : 'white',
+                  border: `1px solid ${refreshing ? 'var(--border)' : 'var(--navy)'}`,
+                  cursor: refreshing ? 'wait' : 'pointer'}}>
+                {refreshing ? 'Searching...' : 'Refresh ↗'}
+              </button>
               <button onClick={() => window.print()}>Print</button>
             </div>
           </div>
+
+          {log && (
+            <div style={{padding:'7px 14px',
+              backgroundColor:'#eff6ff',borderBottom:'1px solid #bfdbfe',
+              fontSize:12,color:'#1e3a8a',
+              display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+              <span>{log}</span>
+              <button onClick={() => setLog('')}
+                style={{background:'none',border:'none',cursor:'pointer',
+                  fontSize:16,color:'var(--mid-gray)',lineHeight:1}}>×</button>
+            </div>
+          )}
 
           {/* Bills table */}
           <div style={{overflowX:'auto'}}>
@@ -660,9 +799,29 @@ const App = () => {
                 <option key={k} value={k}>{k}</option>)}
             </select>
             <div style={{marginLeft:'auto',display:'flex',gap:6}}>
+              <button onClick={doRefresh} disabled={refreshing}
+                style={{fontSize:12,padding:'5px 14px',borderRadius:6,
+                  backgroundColor: refreshing ? 'var(--bg-secondary)' : 'var(--navy)',
+                  color: refreshing ? 'var(--mid-gray)' : 'white',
+                  border: `1px solid ${refreshing ? 'var(--border)' : 'var(--navy)'}`,
+                  cursor: refreshing ? 'wait' : 'pointer'}}>
+                {refreshing ? 'Searching...' : 'Refresh ↗'}
+              </button>
               <button onClick={() => window.print()}>Print</button>
             </div>
           </div>
+
+          {log && (
+            <div style={{padding:'7px 14px',
+              backgroundColor:'#eff6ff',borderBottom:'1px solid #bfdbfe',
+              fontSize:12,color:'#1e3a8a',
+              display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+              <span>{log}</span>
+              <button onClick={() => setLog('')}
+                style={{background:'none',border:'none',cursor:'pointer',
+                  fontSize:16,color:'var(--mid-gray)',lineHeight:1}}>×</button>
+            </div>
+          )}
 
           {/* Timeline table */}
           <div style={{overflowX:'auto'}}>
