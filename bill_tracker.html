@@ -838,6 +838,8 @@ const App = () => {
   const [addSeed, setAddSeed] = React.useState('');
   const [addDraft, setAddDraft] = React.useState(null);
   const [addError, setAddError] = React.useState('');
+  const [billSort, setBillSort] = React.useState({ key:'introduced', dir:'desc' });
+  const [tlSort, setTlSort] = React.useState({ key:'date', dir:'desc' });
   const [showAddEntryModal, setShowAddEntryModal] = React.useState(false);
   const [addEntryStep, setAddEntryStep] = React.useState(1);
   const [addEntrySeed, setAddEntrySeed] = React.useState('');
@@ -1131,6 +1133,17 @@ const App = () => {
     return true;
   });
 
+  const toggleSort = (setter, key) => setter(prev =>
+    prev.key === key ? { key, dir: prev.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: 'asc' }
+  );
+  const cmp = (a, b, key, dir) => {
+    const va = (a[key] || '').toString().toLowerCase();
+    const vb = (b[key] || '').toString().toLowerCase();
+    return dir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+  };
+  const sortedBills = [...filteredBills].sort((a, b) => cmp(a, b, billSort.key, billSort.dir));
+  const sortedTl = [...filteredTl].sort((a, b) => cmp(a, b, tlSort.key, tlSort.dir));
+
   const statsData = activeTab === 'bills'
     ? Object.entries(DOMAIN).map(([k, v]) => ({
         label: v.label.split(' ')[0], val: bills.filter(b => b.domain === k).length, color: v.a
@@ -1279,17 +1292,22 @@ const App = () => {
               <thead>
                 <tr style={{backgroundColor:'var(--bg-secondary)',
                   borderBottom:'2px solid var(--border)'}}>
-                  {['Date','Bill name','Sponsors','Category',
-                    'Party / chamber','Status',''].map(h =>
-                    <th key={h} style={{padding:'8px',textAlign:'left',fontSize:10,
+                  {[{label:'Date',key:'introduced'},{label:'Bill name'},{label:'Sponsors'},
+                    {label:'Category'},{label:'Party / chamber'},{label:'Status'},{label:''}].map(h =>
+                    <th key={h.label} onClick={h.key ? () => toggleSort(setBillSort, h.key) : undefined}
+                      style={{padding:'8px',textAlign:'left',fontSize:10,
                       fontWeight:500,color:'var(--mid-gray)',
                       textTransform:'uppercase',letterSpacing:'0.06em',
-                      paddingLeft: h==='Date' ? 12 : 8}}>{h}</th>
+                      paddingLeft: h.label==='Date' ? 12 : 8,
+                      cursor: h.key ? 'pointer' : 'default',
+                      userSelect: h.key ? 'none' : 'auto'}}>
+                      {h.label}{h.key && billSort.key === h.key ? (billSort.dir === 'asc' ? ' \u25b2' : ' \u25bc') : ''}
+                    </th>
                   )}
                 </tr>
               </thead>
               <tbody>
-                {filteredBills.map(b =>
+                {sortedBills.map(b =>
                   <BillRows key={b.id} bill={b}
                     expanded={expandedBill === b.id}
                     onToggle={id => setExpandedBill(p => p===id ? null : id)}
@@ -1375,16 +1393,22 @@ const App = () => {
               <thead>
                 <tr style={{backgroundColor:'var(--bg-secondary)',
                   borderBottom:'2px solid var(--border)'}}>
-                  {['Date','Agency','Action type','Title + summary',''].map(h =>
-                    <th key={h} style={{padding:'8px',textAlign:'left',fontSize:10,
+                  {[{label:'Date',key:'date'},{label:'Agency',key:'agency'},
+                    {label:'Action type',key:'action'},{label:'Title + summary'},{label:''}].map(h =>
+                    <th key={h.label} onClick={h.key ? () => toggleSort(setTlSort, h.key) : undefined}
+                      style={{padding:'8px',textAlign:'left',fontSize:10,
                       fontWeight:500,color:'var(--mid-gray)',
                       textTransform:'uppercase',letterSpacing:'0.06em',
-                      paddingLeft: h==='Date' ? 12 : 8}}>{h}</th>
+                      paddingLeft: h.label==='Date' ? 12 : 8,
+                      cursor: h.key ? 'pointer' : 'default',
+                      userSelect: h.key ? 'none' : 'auto'}}>
+                      {h.label}{h.key && tlSort.key === h.key ? (tlSort.dir === 'asc' ? ' \u25b2' : ' \u25bc') : ''}
+                    </th>
                   )}
                 </tr>
               </thead>
               <tbody>
-                {filteredTl.map(e =>
+                {sortedTl.map(e =>
                   <TimelineRow key={e.id} entry={e}
                     expanded={expandedTl === e.id}
                     onToggle={id => setExpandedTl(p => p===id ? null : id)}
