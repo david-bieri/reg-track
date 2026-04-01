@@ -247,11 +247,155 @@ const StatusDots = ({ status }) => {
   );
 };
 
+/* ── BillRows component ────────────────────────── */
+const BillRows = ({ bill: b, expanded, onToggle, editMode, onUpdate }) => {
+  const c = CAT[b.category] || { bg:'var(--gray-bg)', t:'var(--text-muted)', a:'var(--mid-gray)' };
+  const p = PARTY[b.party] || PARTY.R;
+  const ch = CHAMBERS[b.chamber] || '?';
+  const dt = b.introduced.slice(5).replace('-','/');
+  const sel = expanded;
+
+  const rowBase = {
+    borderLeft: `4px solid ${c.a}`,
+    cursor: 'pointer',
+    backgroundColor: sel ? `${c.bg}` : 'var(--bg)',
+    transition: 'background-color .15s',
+  };
+
+  return (
+    <React.Fragment>
+      {/* Row 1 — metadata */}
+      <tr style={{...rowBase, borderBottom: sel ? 'none' : '1px solid var(--border)'}}
+          onClick={() => onToggle(b.id)}>
+        <td style={{padding:'7px 8px 7px 12px',fontSize:11,color:'var(--text-muted)',
+          whiteSpace:'nowrap'}}>{dt}</td>
+        <td style={{padding:'7px 8px'}}>
+          <span style={{fontWeight:600,fontSize:13}}>{b.id}</span>
+          <span style={{fontSize:12,marginLeft:6,color:'var(--text)'}}>{b.title}</span>
+        </td>
+        <td style={{padding:'7px 8px',fontSize:11,color:'var(--text-muted)'}}>{b.sponsor}</td>
+        <td style={{padding:'7px 8px'}}>
+          <Pill label={b.category} {...c} sm />
+        </td>
+        <td style={{padding:'7px 8px'}}>
+          <span style={{display:'flex',alignItems:'center',gap:4}}>
+            <Pill label={b.party} {...p} sm />
+            <span style={{fontSize:10,color:'var(--mid-gray)',fontWeight:500}}>{ch}</span>
+          </span>
+        </td>
+        <td style={{padding:'7px 8px'}}><StatusDots status={b.status} /></td>
+        <td style={{padding:'7px 8px',textAlign:'center',fontSize:12,color:'var(--mid-gray)'}}>
+          {sel ? '▾' : '▸'}
+        </td>
+      </tr>
+
+      {/* Row 2 — summary + teeth card */}
+      <tr style={{...rowBase, borderBottom: expanded ? 'none' : '1px solid var(--border)'}}
+          onClick={() => onToggle(b.id)}>
+        <td />
+        <td colSpan={5} style={{padding:'0 8px 8px'}}>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',
+            borderRadius:6,overflow:'hidden',border:`1px solid ${c.a}20`,fontSize:12}}>
+            <div style={{padding:'8px 12px',backgroundColor:`${c.bg}55`,lineHeight:1.5}}>
+              <div style={{fontSize:10,fontWeight:600,color:c.t,marginBottom:3,
+                textTransform:'uppercase',letterSpacing:'0.04em'}}>What it does</div>
+              <div style={{color:'var(--text)'}}>{b.summary}</div>
+            </div>
+            <div style={{padding:'8px 12px',backgroundColor:'var(--bg-secondary)',
+              borderLeft:`1px solid ${c.a}20`,lineHeight:1.5}}>
+              <div style={{fontSize:10,fontWeight:600,color:'var(--text-muted)',marginBottom:3,
+                textTransform:'uppercase',letterSpacing:'0.04em'}}>Teeth / key detail</div>
+              <div style={{color:'var(--text)'}}>{b.teeth}</div>
+            </div>
+          </div>
+        </td>
+        <td />
+      </tr>
+
+      {/* Row 3 — expanded detail + edit controls */}
+      {expanded && (
+        <tr style={{...rowBase, borderBottom:'1px solid var(--border)'}}>
+          <td />
+          <td colSpan={5} style={{padding:'0 8px 10px'}}>
+            <div style={{display:'grid',gridTemplateColumns:'2fr 1fr 1fr',gap:10,fontSize:12}}>
+              <div style={{lineHeight:1.55}}>
+                <div style={{fontSize:10,fontWeight:600,color:'var(--text-muted)',marginBottom:3,
+                  textTransform:'uppercase',letterSpacing:'0.04em'}}>Detail</div>
+                <div style={{color:'var(--text)'}}>{b.detail}</div>
+              </div>
+              <div>
+                <div style={{fontSize:10,fontWeight:600,color:'var(--text-muted)',marginBottom:3,
+                  textTransform:'uppercase',letterSpacing:'0.04em'}}>Info</div>
+                <div style={{fontSize:11,color:'var(--text-muted)',lineHeight:1.7}}>
+                  Introduced: {b.introduced}<br/>
+                  Chamber: {b.chamber}<br/>
+                  Party: {b.party}
+                </div>
+              </div>
+              {editMode && (
+                <div style={{display:'flex',flexDirection:'column',gap:6}}>
+                  <div style={{fontSize:10,fontWeight:600,color:'var(--text-muted)',
+                    textTransform:'uppercase',letterSpacing:'0.04em'}}>Edit</div>
+                  <select value={b.status}
+                    onChange={e => onUpdate(b.id, 'status', e.target.value)}>
+                    {STAGES.map(s => <option key={s} value={s}>{s}</option>)}
+                    <option value="Dead">Dead</option>
+                  </select>
+                  <input type="number" min={0} max={100} placeholder="P(pass) %"
+                    value={b.pPass || ''}
+                    onChange={e => onUpdate(b.id, 'pPass', e.target.value)} />
+                  <textarea rows={2} placeholder="Notes..."
+                    value={b.notes || ''}
+                    onChange={e => onUpdate(b.id, 'notes', e.target.value)} />
+                </div>
+              )}
+            </div>
+          </td>
+          <td />
+        </tr>
+      )}
+    </React.Fragment>
+  );
+};
+
 /* ── app ───────────────────────────────────────── */
 const App = () => {
   const [activeTab, setActiveTab] = React.useState('bills');
   const [editMode, setEditMode] = React.useState(false);
   const [ts, setTs] = React.useState('March 31, 2026');
+  const [bills, setBills] = React.useState(SEED_BILLS);
+  const [timeline] = React.useState(SEED_TIMELINE);
+  const [expandedBill, setExpandedBill] = React.useState(null);
+  const [billFilter, setBillFilter] = React.useState({ cat:'all', party:'all', q:'' });
+
+  const updateBill = (id, field, value) => {
+    setBills(prev => prev.map(b => b.id === id ? { ...b, [field]: value } : b));
+  };
+
+  const filteredBills = bills.filter(b => {
+    if (billFilter.cat !== 'all' && b.category !== billFilter.cat) return false;
+    if (billFilter.party !== 'all' && b.party !== billFilter.party) return false;
+    if (billFilter.q) {
+      const q = billFilter.q.toLowerCase();
+      if (!`${b.title} ${b.sponsor} ${b.summary} ${b.detail} ${b.teeth}`
+        .toLowerCase().includes(q)) return false;
+    }
+    return true;
+  });
+
+  const billStats = activeTab === 'bills' ? [
+    ['Total Bills', bills.length],
+    ['Bipartisan', bills.filter(b => b.party === 'Bipartisan').length],
+    ['In Committee', bills.filter(b => b.status === 'Committee').length],
+    ['Floor Vote', bills.filter(b => b.status === 'Floor Vote').length],
+    ['Introduced', bills.filter(b => b.status === 'Introduced').length],
+  ] : [
+    ['Total Actions', timeline.length],
+    ['CFTC', timeline.filter(e => e.agency === 'CFTC').length],
+    ['Fed', timeline.filter(e => e.agency === 'Fed').length],
+    ['Enforcement', timeline.filter(e => e.action === 'Enforcement').length],
+    ['Research', timeline.filter(e => e.action === 'Research').length],
+  ];
 
   return (
     <div style={{minHeight:'100vh'}}>
@@ -281,15 +425,15 @@ const App = () => {
         </div>
       </div>
 
-      {/* STATS BAR — placeholder */}
+      {/* STATS BAR */}
       <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:1,
         backgroundColor:'var(--border)',marginBottom:0}}>
-        {['—','—','—','—','—'].map((v,i) =>
+        {billStats.map(([label, val], i) =>
           <div key={i} style={{backgroundColor:'var(--bg-secondary)',
             padding:'8px 12px',textAlign:'center'}}>
-            <div style={{fontSize:10,color:'var(--mid-gray)',marginBottom:2}}>—</div>
+            <div style={{fontSize:10,color:'var(--mid-gray)',marginBottom:2}}>{label}</div>
             <div style={{fontSize:20,fontWeight:500,
-              color:'var(--text)',lineHeight:1}}>{v}</div>
+              color:'var(--text)',lineHeight:1}}>{val}</div>
           </div>
         )}
       </div>
@@ -298,8 +442,8 @@ const App = () => {
       <div style={{display:'flex',alignItems:'center',
         borderBottom:'1px solid var(--border)',
         backgroundColor:'var(--bg-secondary)',paddingLeft:14}}>
-        {[['bills','Congressional Bills',SEED_BILLS.length],
-          ['timeline','Regulatory Timeline',SEED_TIMELINE.length]].map(([id,label,count]) =>
+        {[['bills','Congressional Bills',bills.length],
+          ['timeline','Regulatory Timeline',timeline.length]].map(([id,label,count]) =>
           <button key={id} onClick={() => setActiveTab(id)}
             style={{padding:'8px 18px',fontSize:12,fontWeight:500,
               cursor:'pointer',border:'none',
@@ -317,10 +461,79 @@ const App = () => {
         )}
       </div>
 
-      {/* CONTENT PLACEHOLDER */}
-      <div style={{padding:24,color:'var(--text-muted)',fontSize:13}}>
-        {activeTab === 'bills' ? 'Bills table goes here.' : 'Timeline goes here.'}
-      </div>
+      {/* BILLS TAB */}
+      {activeTab === 'bills' && (
+        <div>
+          {/* Filter bar */}
+          <div className="no-print" style={{backgroundColor:'var(--bg-secondary)',
+            padding:'9px 14px',display:'flex',alignItems:'center',
+            gap:8,flexWrap:'wrap',borderBottom:'1px solid var(--border)'}}>
+            <input type="text" placeholder="Search bills..."
+              value={billFilter.q}
+              onChange={e => setBillFilter(f => ({...f, q: e.target.value}))}
+              style={{width:170, borderRadius:20}} />
+            <select value={billFilter.cat}
+              onChange={e => setBillFilter(f => ({...f, cat: e.target.value}))}>
+              <option value="all">All categories</option>
+              {Object.keys(CAT).map(k =>
+                <option key={k} value={k}>{k}</option>)}
+            </select>
+            <select value={billFilter.party}
+              onChange={e => setBillFilter(f => ({...f, party: e.target.value}))}>
+              <option value="all">All parties</option>
+              <option value="D">Democrat</option>
+              <option value="R">Republican</option>
+              <option value="Bipartisan">Bipartisan only</option>
+            </select>
+            <div style={{marginLeft:'auto',display:'flex',gap:6}}>
+              <button onClick={() => window.print()}>Print</button>
+            </div>
+          </div>
+
+          {/* Bills table */}
+          <div style={{overflowX:'auto'}}>
+            <table style={{tableLayout:'fixed'}}>
+              <colgroup>
+                <col style={{width:56}} />
+                <col />
+                <col style={{width:155}} />
+                <col style={{width:120}} />
+                <col style={{width:90}} />
+                <col style={{width:155}} />
+                <col style={{width:26}} />
+              </colgroup>
+              <thead>
+                <tr style={{backgroundColor:'var(--bg-secondary)',
+                  borderBottom:'2px solid var(--border)'}}>
+                  {['Date','Bill name','Sponsors','Category',
+                    'Party / chamber','Status',''].map(h =>
+                    <th key={h} style={{padding:'8px',textAlign:'left',fontSize:10,
+                      fontWeight:500,color:'var(--mid-gray)',
+                      textTransform:'uppercase',letterSpacing:'0.06em',
+                      paddingLeft: h==='Date' ? 12 : 8}}>{h}</th>
+                  )}
+                </tr>
+              </thead>
+              <tbody>
+                {filteredBills.map(b =>
+                  <BillRows key={b.id} bill={b}
+                    expanded={expandedBill === b.id}
+                    onToggle={id => setExpandedBill(p => p===id ? null : id)}
+                    editMode={editMode}
+                    onUpdate={updateBill} />
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* TIMELINE TAB — placeholder */}
+      {activeTab === 'timeline' && (
+        <div style={{padding:24,color:'var(--text-muted)',fontSize:13}}>
+          Timeline goes here.
+        </div>
+      )}
 
       {/* FOOTER */}
       <div style={{padding:'10px 14px',borderTop:'1px solid var(--border)',
@@ -330,7 +543,9 @@ const App = () => {
           David Bieri · SPIA · Virginia Tech
         </span>
         <span style={{fontSize:11,color:'var(--mid-gray)'}}>
-          For educational and research purposes only. Not financial advice.
+          {activeTab === 'bills'
+            ? `${filteredBills.length} of ${bills.length} bills shown`
+            : 'For educational and research purposes only. Not financial advice.'}
         </span>
       </div>
     </div>
