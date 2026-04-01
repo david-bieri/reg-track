@@ -660,6 +660,163 @@ const AddBillModal = ({
   );
 };
 
+/* ── AddEntryModal component ──────────────────── */
+const AddEntryModal = ({
+  step, seed, onSeedChange, onFetch, draft, onDraftChange,
+  onConfirm, onClose, error
+}) => {
+  React.useEffect(() => {
+    const handler = e => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [onClose]);
+
+  return (
+    <div onClick={onClose} style={{
+      position:'fixed',inset:0,backgroundColor:'rgba(0,0,0,0.5)',
+      display:'flex',alignItems:'center',justifyContent:'center',
+      zIndex:1000}}>
+      <div onClick={e => e.stopPropagation()} style={{
+        backgroundColor:'var(--bg)',borderRadius:8,
+        border:'1px solid var(--border)',width:560,maxWidth:'90vw',
+        maxHeight:'85vh',overflowY:'auto',
+        boxShadow:'0 20px 60px rgba(0,0,0,0.3)'}}>
+
+        <div style={{padding:'14px 16px',borderBottom:'1px solid var(--border)',
+          display:'flex',justifyContent:'space-between',alignItems:'center',
+          backgroundColor:'var(--bg-secondary)'}}>
+          <div>
+            <span style={{fontWeight:500,fontSize:14}}>Add regulatory entry</span>
+            <span style={{fontSize:11,color:'var(--text-muted)',marginLeft:8}}>
+              {step === 1 ? 'Paste a press release or agency URL'
+               : step === 2 ? 'Fetching\u2026'
+               : 'Review and confirm'}
+            </span>
+          </div>
+          <button onClick={onClose}
+            style={{background:'none',border:'none',fontSize:18,
+              cursor:'pointer',color:'var(--text-muted)',lineHeight:1}}>\u00d7</button>
+        </div>
+
+        <div style={{padding:16}}>
+          {step === 1 && (
+            <div>
+              <p style={{fontSize:12,color:'var(--text-muted)',marginBottom:12,lineHeight:1.6}}>
+                Paste an official press release URL \u2014 Treasury, CFTC, Fed, SEC, OCC, FDIC, DOJ, or FinCEN.
+                The AI will fetch the page and pre-fill all fields.
+              </p>
+              <input type="url" value={seed} onChange={e => onSeedChange(e.target.value)}
+                placeholder='https://home.treasury.gov/news/press-releases/\u2026'
+                style={{width:'100%',marginBottom:10}}
+                autoFocus
+                onKeyDown={e => { if (e.key === 'Enter' && seed.trim()) onFetch(); }} />
+              {error && <div style={{fontSize:11,color:'var(--red)',marginBottom:8}}>{error}</div>}
+              <div style={{display:'flex',justifyContent:'flex-end',gap:8}}>
+                <button onClick={onClose}>Cancel</button>
+                <button onClick={onFetch} disabled={!seed.trim()}
+                  style={{backgroundColor:'var(--navy)',color:'white',
+                    border:'none',padding:'6px 16px',borderRadius:6,
+                    opacity:seed.trim()?1:0.5,cursor:seed.trim()?'pointer':'default'}}>
+                  Fetch \u2197
+                </button>
+              </div>
+            </div>
+          )}
+
+          {step === 2 && (
+            <div style={{textAlign:'center',padding:'32px 0',
+              color:'var(--text-muted)',fontSize:13}}>
+              <div style={{fontSize:22,marginBottom:12}}>\u22ef</div>
+              Fetching and extracting entry data\u2026
+            </div>
+          )}
+
+          {step === 3 && draft && (
+            <div>
+              <p style={{fontSize:12,color:'var(--text-muted)',marginBottom:14,lineHeight:1.6}}>
+                Review pre-filled fields. Edit anything before adding.
+              </p>
+              <div style={{marginBottom:10}}>
+                <label style={{display:'block',fontSize:10,fontWeight:500,
+                  color:'var(--text-muted)',textTransform:'uppercase',
+                  letterSpacing:'0.06em',marginBottom:3}}>Title</label>
+                <input type="text" value={draft.title||''}
+                  onChange={e => onDraftChange('title',e.target.value)}
+                  style={{width:'100%'}} />
+              </div>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr',gap:10,marginBottom:10}}>
+                <div>
+                  <label style={{display:'block',fontSize:10,fontWeight:500,color:'var(--text-muted)',
+                    textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:3}}>Date</label>
+                  <input type="text" value={draft.date||''}
+                    onChange={e => onDraftChange('date',e.target.value)}
+                    style={{width:'100%'}} />
+                </div>
+                <div>
+                  <label style={{display:'block',fontSize:10,fontWeight:500,color:'var(--text-muted)',
+                    textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:3}}>Agency</label>
+                  <select value={draft.agency||'Treasury'}
+                    onChange={e => onDraftChange('agency',e.target.value)}
+                    style={{width:'100%'}}>
+                    {Object.keys(AGENCY_META).map(k =>
+                      <option key={k} value={k}>{k}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={{display:'block',fontSize:10,fontWeight:500,color:'var(--text-muted)',
+                    textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:3}}>Action</label>
+                  <select value={draft.action||'Guidance'}
+                    onChange={e => onDraftChange('action',e.target.value)}
+                    style={{width:'100%'}}>
+                    {Object.keys(ACTION_META).map(k =>
+                      <option key={k} value={k}>{k}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={{display:'block',fontSize:10,fontWeight:500,color:'var(--text-muted)',
+                    textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:3}}>Domain</label>
+                  <select value={draft.domain||'prediction-markets'}
+                    onChange={e => onDraftChange('domain',e.target.value)}
+                    style={{width:'100%'}}>
+                    {Object.entries(DOMAIN).map(([k,v]) =>
+                      <option key={k} value={k}>{v.label}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div style={{marginBottom:10}}>
+                <label style={{display:'block',fontSize:10,fontWeight:500,
+                  color:'var(--text-muted)',textTransform:'uppercase',
+                  letterSpacing:'0.06em',marginBottom:3}}>Detail</label>
+                <textarea value={draft.detail||''} rows={4}
+                  onChange={e => onDraftChange('detail',e.target.value)}
+                  style={{width:'100%',resize:'vertical'}} />
+              </div>
+              <div style={{marginBottom:10}}>
+                <label style={{display:'block',fontSize:10,fontWeight:500,
+                  color:'var(--text-muted)',textTransform:'uppercase',
+                  letterSpacing:'0.06em',marginBottom:3}}>Source URL</label>
+                <input type="url" value={draft.url||''}
+                  onChange={e => onDraftChange('url',e.target.value)}
+                  style={{width:'100%'}} />
+              </div>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',
+                marginTop:14,paddingTop:12,borderTop:'1px solid var(--border)'}}>
+                <button onClick={onClose} style={{color:'var(--text-muted)'}}>Cancel</button>
+                <button onClick={onConfirm}
+                  style={{backgroundColor:'var(--green)',color:'white',
+                    border:'none',padding:'7px 20px',borderRadius:6,
+                    fontWeight:500,cursor:'pointer'}}>
+                  Add to tracker \u2713
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 /* ── persistence ───────────────────────────────── */
 const STORAGE_KEY = 'reg-track-v1';
 
