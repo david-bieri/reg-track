@@ -838,6 +838,11 @@ const App = () => {
   const [addSeed, setAddSeed] = React.useState('');
   const [addDraft, setAddDraft] = React.useState(null);
   const [addError, setAddError] = React.useState('');
+  const [showAddEntryModal, setShowAddEntryModal] = React.useState(false);
+  const [addEntryStep, setAddEntryStep] = React.useState(1);
+  const [addEntrySeed, setAddEntrySeed] = React.useState('');
+  const [addEntryDraft, setAddEntryDraft] = React.useState(null);
+  const [addEntryError, setAddEntryError] = React.useState('');
 
   /* persistence helpers */
   const saveToStorage = React.useCallback((b, t) => {
@@ -1032,6 +1037,74 @@ const App = () => {
     setAddSeed('');
     setAddDraft(null);
     setAddError('');
+  };
+
+  /* Add Entry — URL fetch + confirm */
+  const doFetchEntry = async () => {
+    if (!addEntrySeed.trim()) return;
+    setAddEntryStep(2);
+    setAddEntryError('');
+    try {
+      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1500,
+          tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+          messages: [{ role: 'user',
+            content: `Fetch this URL and extract regulatory action data: "${addEntrySeed}"\n\nReturn ONLY compact valid JSON \u2014 no markdown, no backticks:\n{"date":"2026-MM-DD","agency":"Treasury","action":"Proposed Rule","domain":"crypto","title":"Short descriptive title (10 words max)","detail":"2-3 sentence summary of what this action does, who it affects, and key requirements or deadlines.","url":"${addEntrySeed}"}\n\nagency must be one of: CFTC, SEC, Fed, OCC, FDIC, DOJ, Treasury, FinCEN\naction must be one of: Final Rule, Proposed Rule, Guidance, Enforcement, Staff Letter, Research, Inquiry, No-Action Letter\ndomain must be one of: prediction-markets, crypto, monetary-policy, fintech, financial-stability\ndate must be YYYY-MM-DD format.`
+          }]
+        })
+      });
+      const data = await resp.json();
+      const text = (data.content || [])
+        .filter(b => b.type === 'text').map(b => b.text).join('');
+      const m = text.match(/\{[\s\S]*\}/);
+      if (m) {
+        const raw = JSON.parse(m[0]);
+        setAddEntryDraft({
+          date:   raw.date   || '',
+          agency: raw.agency || 'Treasury',
+          action: raw.action || 'Guidance',
+          domain: raw.domain || 'prediction-markets',
+          title:  raw.title  || '',
+          detail: raw.detail || '',
+          url:    raw.url    || addEntrySeed,
+          isNew:  true,
+        });
+        setAddEntryStep(3);
+      } else {
+        setAddEntryError('Could not parse entry data. Check the URL and try again.');
+        setAddEntryStep(1);
+      }
+    } catch (err) {
+      setAddEntryError(`Fetch error: ${err.message}`);
+      setAddEntryStep(1);
+    }
+  };
+
+  const doConfirmEntry = () => {
+    if (!addEntryDraft) return;
+    setTimeline(prev => {
+      const maxId = Math.max(...prev.map(e => parseInt(e.id.replace('tl-','')) || 0));
+      const next = [{ ...addEntryDraft, id: `tl-${maxId + 1}` }, ...prev];
+      saveToStorage(bills, next);
+      return next;
+    });
+    setShowAddEntryModal(false);
+    setAddEntryStep(1);
+    setAddEntrySeed('');
+    setAddEntryDraft(null);
+    setAddEntryError('');
+  };
+
+  const closeAddEntryModal = () => {
+    setShowAddEntryModal(false);
+    setAddEntryStep(1);
+    setAddEntrySeed('');
+    setAddEntryDraft(null);
+    setAddEntryError('');
   };
 
   const filteredTl = timeline.filter(e => {
@@ -1267,6 +1340,12 @@ const App = () => {
                   cursor: refreshing ? 'wait' : 'pointer'}}>
                 {refreshing ? 'Searching...' : 'Refresh ↗'}
               </button>
+              <button onClick={() => setShowAddEntryModal(true)}
+                style={{fontSize:12,padding:'5px 12px',borderRadius:6,
+                  backgroundColor:'var(--teal)',color:'white',border:'none',
+                  cursor:'pointer'}}>
+                + Add entry
+              </button>
               <button onClick={() => window.print()}>Print</button>
             </div>
           </div>
@@ -1344,6 +1423,21 @@ const App = () => {
           onConfirm={doConfirmBill}
           onClose={closeAddModal}
           error={addError}
+        />
+      )}
+
+      {/* ADD ENTRY MODAL */}
+      {showAddEntryModal && (
+        <AddEntryModal
+          step={addEntryStep}
+          seed={addEntrySeed}
+          onSeedChange={setAddEntrySeed}
+          onFetch={doFetchEntry}
+          draft={addEntryDraft}
+          onDraftChange={(key, val) => setAddEntryDraft(d => ({...d, [key]: val}))}
+          onConfirm={doConfirmEntry}
+          onClose={closeAddEntryModal}
+          error={addEntryError}
         />
       )}
     </div>
