@@ -179,34 +179,34 @@ const SEED_BILLS = [
 
 /* ── seed data: timeline ───────────────────────── */
 const SEED_TIMELINE = [
-  { date:'2026-03-04', agency:'Fed', action:'Research',
+  { id:'tl-1', date:'2026-03-04', agency:'Fed', action:'Research',
     title:'FEDS Working Paper: Price Discovery in Event Markets',
     detail:'Board staff analyze information aggregation efficiency in CFTC-regulated prediction markets vs. traditional derivatives. Finds prediction market prices converge faster to fundamental value for binary outcomes.' },
-  { date:'2026-03-07', agency:'CFTC', action:'Guidance',
+  { id:'tl-2', date:'2026-03-07', agency:'CFTC', action:'Guidance',
     title:'Staff Advisory on Event Contract Listing Standards',
     detail:'CFTC Division of Market Oversight issues advisory clarifying conditions under which DCMs may self-certify new event contracts without full Commission review.' },
-  { date:'2026-03-11', agency:'SEC', action:'Staff Letter',
+  { id:'tl-3', date:'2026-03-11', agency:'SEC', action:'Staff Letter',
     title:'Staff Bulletin on Prediction Market Token Classification',
     detail:'Division of Corporation Finance issues guidance that tokenized prediction market positions may constitute securities depending on the Howey analysis of the specific contract structure.' },
-  { date:'2026-03-13', agency:'CFTC', action:'Enforcement',
+  { id:'tl-4', date:'2026-03-13', agency:'CFTC', action:'Enforcement',
     title:'CFTC Enforcement Action: Unregistered Offshore Platform',
     detail:'CFTC files civil complaint against offshore prediction market for offering unregistered event contracts to U.S. persons. Seeks permanent injunction and $12M in disgorgement.' },
-  { date:'2026-03-17', agency:'Treasury', action:'Inquiry',
+  { id:'tl-5', date:'2026-03-17', agency:'Treasury', action:'Inquiry',
     title:'Treasury RFI on Prediction Market Tax Treatment',
     detail:'IRS/Treasury issue Request for Information on appropriate tax treatment of prediction market gains — whether to classify as capital gains, ordinary income, or gambling winnings.' },
-  { date:'2026-03-19', agency:'OCC', action:'Guidance',
+  { id:'tl-6', date:'2026-03-19', agency:'OCC', action:'Guidance',
     title:'OCC Interpretive Letter: Bank Participation in Prediction Markets',
     detail:'OCC concludes that national banks may clear and settle prediction market contracts as part of permissible banking activities, subject to risk management safeguards.' },
-  { date:'2026-03-21', agency:'CFTC', action:'Proposed Rule',
+  { id:'tl-7', date:'2026-03-21', agency:'CFTC', action:'Proposed Rule',
     title:'CFTC NPRM: Event Contract Margin Requirements',
     detail:'Commission proposes minimum margin requirements for event contracts on designated contract markets. Comment period 60 days. Proposes 10% initial margin for standard binary contracts.' },
-  { date:'2026-03-24', agency:'Fed', action:'Guidance',
+  { id:'tl-8', date:'2026-03-24', agency:'Fed', action:'Guidance', isNew:true,
     title:'SR Letter 26-4: Supervisory Expectations for Bank Prediction Market Exposure',
     detail:'Federal Reserve issues SR letter setting expectations for state member banks engaging in prediction market clearing, including capital charges and concentration limits.' },
-  { date:'2026-03-27', agency:'FinCEN', action:'Proposed Rule',
+  { id:'tl-9', date:'2026-03-27', agency:'FinCEN', action:'Proposed Rule', isNew:true,
     title:'FinCEN NPRM: AML/KYC Requirements for Prediction Market Platforms',
     detail:'FinCEN proposes to designate prediction market platforms as money services businesses, requiring full BSA/AML compliance, SAR filing, and customer identification programs.' },
-  { date:'2026-03-30', agency:'DOJ', action:'Inquiry',
+  { id:'tl-10', date:'2026-03-30', agency:'DOJ', action:'Inquiry', isNew:true,
     title:'DOJ Antitrust Inquiry: Prediction Market Concentration',
     detail:'DOJ Antitrust Division opens preliminary inquiry into market concentration among prediction market exchanges, focusing on potential barriers to entry and data exclusivity agreements.' },
 ];
@@ -358,19 +358,127 @@ const BillRows = ({ bill: b, expanded, onToggle, editMode, onUpdate }) => {
   );
 };
 
+/* ── TimelineRow component ─────────────────────── */
+const TimelineRow = ({ entry: e, expanded, onToggle, editMode, onUpdate }) => {
+  const ag = AGENCY_META[e.agency] || { bg:'var(--gray-bg)', t:'var(--text-muted)', a:'var(--mid-gray)' };
+  const ac = ACTION_META[e.action] || { bg:'var(--gray-bg)', t:'var(--text-muted)', a:'var(--mid-gray)' };
+  const dt = e.date.slice(5).replace('-','/');
+
+  const rowBase = {
+    borderLeft: `4px solid ${ag.a}`,
+    cursor: 'pointer',
+    backgroundColor: expanded ? `${ag.bg}` : 'var(--bg)',
+    transition: 'background-color .15s',
+  };
+
+  return (
+    <React.Fragment>
+      {/* Row 1 — metadata */}
+      <tr style={{...rowBase, borderBottom: expanded ? 'none' : '1px solid var(--border)'}}
+          onClick={() => onToggle(e.id)}>
+        <td style={{padding:'7px 8px 7px 12px',fontSize:11,color:'var(--text-muted)',
+          whiteSpace:'nowrap'}}>{dt}</td>
+        <td style={{padding:'7px 8px'}}>
+          <Pill label={e.agency} {...ag} sm />
+        </td>
+        <td style={{padding:'7px 8px'}}>
+          <Pill label={e.action} {...ac} sm />
+        </td>
+        <td style={{padding:'7px 8px'}}>
+          <span style={{fontWeight:500,fontSize:12,color:'var(--text)'}}>
+            {e.title}
+          </span>
+          {e.isNew && (
+            <span style={{marginLeft:6,fontSize:9,padding:'1px 6px',borderRadius:20,
+              backgroundColor:'var(--red)',color:'#fff',fontWeight:600,
+              verticalAlign:'middle'}}>NEW</span>
+          )}
+          <div style={{fontSize:11,color:'var(--text-muted)',marginTop:2,lineHeight:1.45}}>
+            {e.detail.length > 120 && !expanded
+              ? e.detail.slice(0, 120) + '…' : e.detail}
+          </div>
+        </td>
+        <td style={{padding:'7px 8px',textAlign:'center',fontSize:12,color:'var(--mid-gray)'}}>
+          {expanded ? '▾' : '▸'}
+        </td>
+      </tr>
+
+      {/* Row 2 — expanded detail + edit */}
+      {expanded && (
+        <tr style={{...rowBase, borderBottom:'1px solid var(--border)'}}>
+          <td />
+          <td colSpan={3} style={{padding:'0 8px 10px'}}>
+            <div style={{display:'grid',gridTemplateColumns:'2fr 1fr',gap:12,fontSize:12}}>
+              <div style={{lineHeight:1.55}}>
+                <div style={{fontSize:10,fontWeight:600,color:'var(--text-muted)',marginBottom:3,
+                  textTransform:'uppercase',letterSpacing:'0.04em'}}>Full detail</div>
+                <div style={{color:'var(--text)'}}>{e.detail}</div>
+              </div>
+              <div>
+                {editMode ? (
+                  <div style={{display:'flex',flexDirection:'column',gap:6}}>
+                    <div style={{fontSize:10,fontWeight:600,color:'var(--text-muted)',
+                      textTransform:'uppercase',letterSpacing:'0.04em'}}>Edit</div>
+                    <select value={e.action}
+                      onChange={ev => onUpdate(e.id, 'action', ev.target.value)}>
+                      {Object.keys(ACTION_META).map(a =>
+                        <option key={a} value={a}>{a}</option>)}
+                    </select>
+                    <textarea rows={2} placeholder="Notes..."
+                      value={e.notes || ''}
+                      onChange={ev => onUpdate(e.id, 'notes', ev.target.value)} />
+                  </div>
+                ) : (
+                  <div>
+                    <div style={{fontSize:10,fontWeight:600,color:'var(--text-muted)',marginBottom:3,
+                      textTransform:'uppercase',letterSpacing:'0.04em'}}>Info</div>
+                    <div style={{fontSize:11,color:'var(--text-muted)',lineHeight:1.7}}>
+                      Date: {e.date}<br/>
+                      Agency: {e.agency}<br/>
+                      Action: {e.action}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </td>
+          <td />
+        </tr>
+      )}
+    </React.Fragment>
+  );
+};
+
 /* ── app ───────────────────────────────────────── */
 const App = () => {
   const [activeTab, setActiveTab] = React.useState('bills');
   const [editMode, setEditMode] = React.useState(false);
   const [ts, setTs] = React.useState('March 31, 2026');
   const [bills, setBills] = React.useState(SEED_BILLS);
-  const [timeline] = React.useState(SEED_TIMELINE);
+  const [timeline, setTimeline] = React.useState(SEED_TIMELINE);
   const [expandedBill, setExpandedBill] = React.useState(null);
+  const [expandedTl, setExpandedTl] = React.useState(null);
   const [billFilter, setBillFilter] = React.useState({ cat:'all', party:'all', q:'' });
+  const [tlFilter, setTlFilter] = React.useState({ agency:'all', action:'all', q:'' });
 
   const updateBill = (id, field, value) => {
     setBills(prev => prev.map(b => b.id === id ? { ...b, [field]: value } : b));
   };
+
+  const updateTl = (id, field, value) => {
+    setTimeline(prev => prev.map(e => e.id === id ? { ...e, [field]: value } : e));
+  };
+
+  const filteredTl = timeline.filter(e => {
+    if (tlFilter.agency !== 'all' && e.agency !== tlFilter.agency) return false;
+    if (tlFilter.action !== 'all' && e.action !== tlFilter.action) return false;
+    if (tlFilter.q) {
+      const q = tlFilter.q.toLowerCase();
+      if (!`${e.title} ${e.detail} ${e.notes || ''}`
+        .toLowerCase().includes(q)) return false;
+    }
+    return true;
+  });
 
   const filteredBills = bills.filter(b => {
     if (billFilter.cat !== 'all' && b.category !== billFilter.cat) return false;
@@ -528,10 +636,66 @@ const App = () => {
         </div>
       )}
 
-      {/* TIMELINE TAB — placeholder */}
+      {/* TIMELINE TAB */}
       {activeTab === 'timeline' && (
-        <div style={{padding:24,color:'var(--text-muted)',fontSize:13}}>
-          Timeline goes here.
+        <div>
+          {/* Filter bar */}
+          <div className="no-print" style={{backgroundColor:'var(--bg-secondary)',
+            padding:'9px 14px',display:'flex',alignItems:'center',
+            gap:8,flexWrap:'wrap',borderBottom:'1px solid var(--border)'}}>
+            <input type="text" placeholder="Search timeline..."
+              value={tlFilter.q}
+              onChange={e => setTlFilter(f => ({...f, q: e.target.value}))}
+              style={{width:170, borderRadius:20}} />
+            <select value={tlFilter.agency}
+              onChange={e => setTlFilter(f => ({...f, agency: e.target.value}))}>
+              <option value="all">All agencies</option>
+              {Object.keys(AGENCY_META).map(k =>
+                <option key={k} value={k}>{k}</option>)}
+            </select>
+            <select value={tlFilter.action}
+              onChange={e => setTlFilter(f => ({...f, action: e.target.value}))}>
+              <option value="all">All action types</option>
+              {Object.keys(ACTION_META).map(k =>
+                <option key={k} value={k}>{k}</option>)}
+            </select>
+            <div style={{marginLeft:'auto',display:'flex',gap:6}}>
+              <button onClick={() => window.print()}>Print</button>
+            </div>
+          </div>
+
+          {/* Timeline table */}
+          <div style={{overflowX:'auto'}}>
+            <table style={{tableLayout:'fixed'}}>
+              <colgroup>
+                <col style={{width:80}} />
+                <col style={{width:90}} />
+                <col style={{width:105}} />
+                <col />
+                <col style={{width:26}} />
+              </colgroup>
+              <thead>
+                <tr style={{backgroundColor:'var(--bg-secondary)',
+                  borderBottom:'2px solid var(--border)'}}>
+                  {['Date','Agency','Action type','Title + summary',''].map(h =>
+                    <th key={h} style={{padding:'8px',textAlign:'left',fontSize:10,
+                      fontWeight:500,color:'var(--mid-gray)',
+                      textTransform:'uppercase',letterSpacing:'0.06em',
+                      paddingLeft: h==='Date' ? 12 : 8}}>{h}</th>
+                  )}
+                </tr>
+              </thead>
+              <tbody>
+                {filteredTl.map(e =>
+                  <TimelineRow key={e.id} entry={e}
+                    expanded={expandedTl === e.id}
+                    onToggle={id => setExpandedTl(p => p===id ? null : id)}
+                    editMode={editMode}
+                    onUpdate={updateTl} />
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
@@ -545,7 +709,7 @@ const App = () => {
         <span style={{fontSize:11,color:'var(--mid-gray)'}}>
           {activeTab === 'bills'
             ? `${filteredBills.length} of ${bills.length} bills shown`
-            : 'For educational and research purposes only. Not financial advice.'}
+            : `${filteredTl.length} of ${timeline.length} entries shown`}
         </span>
       </div>
     </div>
