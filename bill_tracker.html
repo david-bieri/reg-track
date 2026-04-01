@@ -117,60 +117,83 @@ const ACTION_META = {
   'No-Action Letter': { bg:'var(--gray-bg)',   t:'var(--text-muted)',  a:'var(--mid-gray)' },
 };
 
+const DOMAIN = {
+  'prediction-markets': {
+    label: 'Prediction markets',
+    a: '#dc2626', bg: '#fee2e2', t: '#991b1b'
+  },
+  'crypto': {
+    label: 'Crypto / digital assets',
+    a: '#1d6fa4', bg: '#dbeafe', t: '#1e3a8a'
+  },
+  'monetary-policy': {
+    label: 'Monetary policy',
+    a: '#16a34a', bg: '#dcfce7', t: '#14532d'
+  },
+  'fintech': {
+    label: 'FinTech',
+    a: '#7c3aed', bg: '#f5f3ff', t: '#4c1d95'
+  },
+  'financial-stability': {
+    label: 'Financial stability',
+    a: '#d97706', bg: '#fef3c7', t: '#92400e'
+  },
+};
+
 /* ── seed data: bills ──────────────────────────── */
 const SEED_BILLS = [
   { id:'S.1234', title:'Prediction Market Integrity Act',
     sponsor:'Sen. Lummis (R-WY)', party:'R', chamber:'Senate',
-    category:'Prediction Markets', status:'Committee',
+    category:'Prediction Markets', domain:'prediction-markets', status:'Committee',
     introduced:'2026-03-05',
     summary:'Establishes CFTC as primary regulator of event contracts on registered prediction markets. Defines lawful event contracts and prohibits binary contracts on assassination, terrorism, and election outcomes involving minors.',
     teeth:'Civil penalties up to $1M per violation; criminal referral for manipulation.',
     detail:'Referred to Senate Agriculture Committee. Hearing scheduled April 8, 2026.' },
   { id:'H.R.2200', title:'Decentralized Prediction Market Study Act',
     sponsor:'Rep. Emmer (R-MN)', party:'R', chamber:'House',
-    category:'Prediction Markets', status:'Introduced',
+    category:'Prediction Markets', domain:'prediction-markets', status:'Introduced',
     introduced:'2026-03-08',
     summary:'Directs GAO to conduct a 12-month study on decentralized prediction markets, including Polymarket and Kalshi, evaluating systemic risk, information quality, and existing regulatory gaps.',
     teeth:'Report due to Congress within 12 months; no direct penalty provisions.',
     detail:'Referred to House Financial Services Committee.' },
   { id:'S.1301', title:'Event Contract Clarity Act',
     sponsor:'Sen. Hagerty (R-TN)', party:'R', chamber:'Senate',
-    category:'Prediction Markets', status:'Committee',
+    category:'Prediction Markets', domain:'prediction-markets', status:'Committee',
     introduced:'2026-03-10',
     summary:'Amends the Commodity Exchange Act to clarify that event contracts on economic indicators (CPI, NFP, GDP) are lawful commodity interests eligible for clearing on DCMs.',
     teeth:'Safe harbor for compliant DCMs; sunset clause at 5 years.',
     detail:'Co-sponsored by Sen. Tillis (R-NC). Markup tentatively scheduled May 2026.' },
   { id:'H.R.2350', title:'Election Betting Prohibition Act',
     sponsor:'Rep. Sherman (D-CA)', party:'D', chamber:'House',
-    category:'Prediction Markets', status:'Introduced',
+    category:'Prediction Markets', domain:'prediction-markets', status:'Introduced',
     introduced:'2026-03-12',
     summary:'Prohibits any CFTC-regulated exchange from listing event contracts whose payoff depends on the outcome of any federal, state, or local election.',
     teeth:'$500K fine per contract listed; exchange license suspension.',
     detail:'Referred to House Agriculture Committee and House Financial Services Committee.' },
   { id:'S.1400', title:'CFTC Prediction Market Oversight Funding Act',
     sponsor:'Sen. Boozman (R-AR)', party:'R', chamber:'Senate',
-    category:'Prediction Markets', status:'Floor Vote',
+    category:'Prediction Markets', domain:'prediction-markets', status:'Floor Vote',
     introduced:'2026-03-15',
     summary:'Appropriates $30M to the CFTC for FY2027 specifically earmarked for supervision and examination of designated contract markets listing event contracts.',
     teeth:'Annual GAO audit of CFTC spending on prediction market oversight.',
     detail:'Passed Senate Agriculture Committee 14-8. Floor vote expected week of April 14.' },
   { id:'H.R.2500', title:'State Prediction Market Compact Act',
     sponsor:'Rep. Hill (R-AR)', party:'Bipartisan', chamber:'House',
-    category:'Prediction Markets', status:'Introduced',
+    category:'Prediction Markets', domain:'prediction-markets', status:'Introduced',
     introduced:'2026-03-18',
     summary:'Authorizes states to form interstate compacts for regulating prediction markets that operate below the federal threshold ($25M annual volume), preserving CFTC authority above that level.',
     teeth:'Federal preemption for markets above threshold; state AG enforcement below.',
     detail:'Bipartisan bill with Rep. Torres (D-NY) as original co-sponsor.' },
   { id:'S.1500', title:'Prediction Market Consumer Protection Act',
     sponsor:'Sen. Warren (D-MA)', party:'D', chamber:'Senate',
-    category:'Prediction Markets', status:'Committee',
+    category:'Prediction Markets', domain:'prediction-markets', status:'Committee',
     introduced:'2026-03-22',
     summary:'Requires prediction market exchanges to maintain a segregated customer fund, disclose resolution sources, and file quarterly risk reports with the CFTC.',
     teeth:'Treble damages in private right of action for customer fund shortfalls.',
     detail:'Referred to Senate Banking Committee. Warren seeks joint jurisdiction with Agriculture.' },
   { id:'H.R.2650', title:'Forecasting Transparency in Government Act',
     sponsor:'Rep. Auchincloss (D-MA)', party:'D', chamber:'House',
-    category:'Prediction Markets', status:'Introduced',
+    category:'Prediction Markets', domain:'prediction-markets', status:'Introduced',
     introduced:'2026-03-26',
     summary:'Mandates that OMB publish real-time forecasting dashboards incorporating prediction market prices for key economic and policy indicators.',
     teeth:'OMB compliance deadline 18 months after enactment; Inspector General review.',
@@ -250,15 +273,16 @@ const StatusDots = ({ status }) => {
 /* ── BillRows component ────────────────────────── */
 const BillRows = ({ bill: b, expanded, onToggle, editMode, onUpdate }) => {
   const c = CAT[b.category] || { bg:'var(--gray-bg)', t:'var(--text-muted)', a:'var(--mid-gray)' };
+  const d = DOMAIN[b.domain] || { a:'var(--mid-gray)', bg:'var(--gray-bg)', t:'var(--text-muted)' };
   const p = PARTY[b.party] || PARTY.R;
   const ch = CHAMBERS[b.chamber] || '?';
   const dt = b.introduced.slice(5).replace('-','/');
   const sel = expanded;
 
   const rowBase = {
-    borderLeft: `4px solid ${c.a}`,
+    borderLeft: `4px solid ${d.a}`,
     cursor: 'pointer',
-    backgroundColor: sel ? `${c.bg}` : 'var(--bg)',
+    backgroundColor: sel ? `${d.bg}` : 'var(--bg)',
     transition: 'background-color .15s',
   };
 
@@ -329,7 +353,8 @@ const BillRows = ({ bill: b, expanded, onToggle, editMode, onUpdate }) => {
                 <div style={{fontSize:11,color:'var(--text-muted)',lineHeight:1.7}}>
                   Introduced: {b.introduced}<br/>
                   Chamber: {b.chamber}<br/>
-                  Party: {b.party}
+                  Party: {b.party}<br/>
+                  Domain: <Pill label={d.label || b.domain} a={d.a} bg={d.bg} t={d.t} sm />
                 </div>
               </div>
               {editMode && (
@@ -340,6 +365,11 @@ const BillRows = ({ bill: b, expanded, onToggle, editMode, onUpdate }) => {
                     onChange={e => onUpdate(b.id, 'status', e.target.value)}>
                     {STAGES.map(s => <option key={s} value={s}>{s}</option>)}
                     <option value="Dead">Dead</option>
+                  </select>
+                  <select value={b.domain || 'prediction-markets'}
+                    onChange={e => onUpdate(b.id, 'domain', e.target.value)}>
+                    {Object.entries(DOMAIN).map(([k,v]) =>
+                      <option key={k} value={k}>{v.label}</option>)}
                   </select>
                   <input type="number" min={0} max={100} placeholder="P(pass) %"
                     value={b.pPass || ''}
@@ -449,6 +479,162 @@ const TimelineRow = ({ entry: e, expanded, onToggle, editMode, onUpdate }) => {
   );
 };
 
+/* ── AddBillModal component ────────────────────── */
+const AddBillModal = ({
+  step, seed, onSeedChange, onFetch, draft, onDraftChange,
+  onConfirm, onClose, error
+}) => {
+  React.useEffect(() => {
+    const handler = e => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [onClose]);
+
+  return (
+    <div onClick={onClose} style={{
+      position:'fixed',inset:0,backgroundColor:'rgba(0,0,0,0.5)',
+      display:'flex',alignItems:'center',justifyContent:'center',
+      zIndex:1000}}>
+      <div onClick={e => e.stopPropagation()} style={{
+        backgroundColor:'var(--bg)',borderRadius:8,
+        border:'1px solid var(--border)',width:560,maxWidth:'90vw',
+        maxHeight:'85vh',overflowY:'auto',
+        boxShadow:'0 20px 60px rgba(0,0,0,0.3)'}}>
+
+        <div style={{padding:'14px 16px',borderBottom:'1px solid var(--border)',
+          display:'flex',justifyContent:'space-between',alignItems:'center',
+          backgroundColor:'var(--bg-secondary)'}}>
+          <div>
+            <span style={{fontWeight:500,fontSize:14}}>Add bill</span>
+            <span style={{fontSize:11,color:'var(--text-muted)',marginLeft:8}}>
+              {step === 1 ? 'Enter a bill name, URL, or description'
+               : step === 2 ? 'Searching...'
+               : 'Review and confirm'}
+            </span>
+          </div>
+          <button onClick={onClose}
+            style={{background:'none',border:'none',fontSize:18,
+              cursor:'pointer',color:'var(--text-muted)',lineHeight:1}}>×</button>
+        </div>
+
+        <div style={{padding:16}}>
+          {step === 1 && (
+            <div>
+              <p style={{fontSize:12,color:'var(--text-muted)',marginBottom:12,lineHeight:1.6}}>
+                Paste a bill name (e.g. "PREDICT Act"), a congress.gov URL,
+                a press release URL, or a short description. The AI will search
+                for it and pre-fill all fields.
+              </p>
+              <textarea value={seed} onChange={e => onSeedChange(e.target.value)}
+                placeholder='e.g. GENIUS Act stablecoin regulation 2026...'
+                rows={3} style={{width:'100%',marginBottom:10,resize:'vertical'}}
+                autoFocus />
+              {error && <div style={{fontSize:11,color:'var(--red)',marginBottom:8}}>{error}</div>}
+              <div style={{display:'flex',justifyContent:'flex-end',gap:8}}>
+                <button onClick={onClose}>Cancel</button>
+                <button onClick={onFetch} disabled={!seed.trim()}
+                  style={{backgroundColor:'var(--navy)',color:'white',
+                    border:'none',padding:'6px 16px',borderRadius:6,
+                    opacity:seed.trim()?1:0.5,cursor:seed.trim()?'pointer':'default'}}>
+                  Search ↗
+                </button>
+              </div>
+            </div>
+          )}
+
+          {step === 2 && (
+            <div style={{textAlign:'center',padding:'32px 0',
+              color:'var(--text-muted)',fontSize:13}}>
+              <div style={{fontSize:22,marginBottom:12}}>⋯</div>
+              Searching and pre-filling bill data…
+            </div>
+          )}
+
+          {step === 3 && draft && (
+            <div>
+              <p style={{fontSize:12,color:'var(--text-muted)',marginBottom:14,lineHeight:1.6}}>
+                Review the pre-filled fields below. Edit anything that looks wrong before adding.
+              </p>
+              {[['Bill name','title','text'],['Date','introduced','text'],
+                ['Bill ID','id','text'],['Sponsors','sponsor','text']].map(([label,key,type]) => (
+                <div key={key} style={{marginBottom:10}}>
+                  <label style={{display:'block',fontSize:10,fontWeight:500,
+                    color:'var(--text-muted)',textTransform:'uppercase',
+                    letterSpacing:'0.06em',marginBottom:3}}>{label}</label>
+                  <input type={type} value={draft[key]||''}
+                    onChange={e => onDraftChange(key,e.target.value)}
+                    style={{width:'100%'}} />
+                </div>
+              ))}
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr',gap:10,marginBottom:10}}>
+                <div>
+                  <label style={{display:'block',fontSize:10,fontWeight:500,color:'var(--text-muted)',
+                    textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:3}}>Domain</label>
+                  <select value={draft.domain} onChange={e => onDraftChange('domain',e.target.value)}
+                    style={{width:'100%'}}>
+                    {Object.entries(DOMAIN).map(([k,v]) =>
+                      <option key={k} value={k}>{v.label}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={{display:'block',fontSize:10,fontWeight:500,color:'var(--text-muted)',
+                    textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:3}}>Category</label>
+                  <select value={draft.category} onChange={e => onDraftChange('category',e.target.value)}
+                    style={{width:'100%'}}>
+                    {Object.keys(CAT).map(k => <option key={k} value={k}>{k}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={{display:'block',fontSize:10,fontWeight:500,color:'var(--text-muted)',
+                    textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:3}}>Party</label>
+                  <select value={draft.party} onChange={e => onDraftChange('party',e.target.value)}
+                    style={{width:'100%'}}>
+                    <option value="D">Democrat</option>
+                    <option value="R">Republican</option>
+                    <option value="Bipartisan">Bipartisan</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{display:'block',fontSize:10,fontWeight:500,color:'var(--text-muted)',
+                    textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:3}}>Chamber</label>
+                  <select value={draft.chamber} onChange={e => onDraftChange('chamber',e.target.value)}
+                    style={{width:'100%'}}>
+                    <option value="Senate">Senate</option>
+                    <option value="House">House</option>
+                  </select>
+                </div>
+              </div>
+              {[['What it bans / does (summary)','summary',2],
+                ['Teeth / enforcement detail','teeth',2],
+                ['Full bill text (detail)','detail',3],
+                ['Notes','notes',2]].map(([label,key,rows]) => (
+                <div key={key} style={{marginBottom:10}}>
+                  <label style={{display:'block',fontSize:10,fontWeight:500,
+                    color:'var(--text-muted)',textTransform:'uppercase',
+                    letterSpacing:'0.06em',marginBottom:3}}>{label}</label>
+                  <textarea value={draft[key]||''} rows={rows}
+                    onChange={e => onDraftChange(key,e.target.value)}
+                    style={{width:'100%',resize:'vertical'}} />
+                </div>
+              ))}
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',
+                marginTop:14,paddingTop:12,borderTop:'1px solid var(--border)'}}>
+                <button onClick={onClose} style={{color:'var(--text-muted)'}}>Cancel</button>
+                <button onClick={onConfirm}
+                  style={{backgroundColor:'var(--green)',color:'white',
+                    border:'none',padding:'7px 20px',borderRadius:6,
+                    fontWeight:500,cursor:'pointer'}}>
+                  Add to tracker ✓
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 /* ── persistence ───────────────────────────────── */
 const STORAGE_KEY = 'reg-track-v1';
 
@@ -461,10 +647,15 @@ const App = () => {
   const [timeline, setTimeline] = React.useState(SEED_TIMELINE);
   const [expandedBill, setExpandedBill] = React.useState(null);
   const [expandedTl, setExpandedTl] = React.useState(null);
-  const [billFilter, setBillFilter] = React.useState({ cat:'all', party:'all', q:'' });
+  const [billFilter, setBillFilter] = React.useState({ domain:'all', cat:'all', party:'all', q:'' });
   const [tlFilter, setTlFilter] = React.useState({ agency:'all', action:'all', q:'' });
   const [refreshing, setRefreshing] = React.useState(false);
   const [log, setLog] = React.useState('');
+  const [showAddModal, setShowAddModal] = React.useState(false);
+  const [addStep, setAddStep] = React.useState(1);
+  const [addSeed, setAddSeed] = React.useState('');
+  const [addDraft, setAddDraft] = React.useState(null);
+  const [addError, setAddError] = React.useState('');
 
   /* persistence helpers */
   const saveToStorage = React.useCallback((b, t) => {
@@ -588,6 +779,79 @@ const App = () => {
     setRefreshing(false);
   };
 
+  /* Add Bill — AI fetch + confirm */
+  const doFetchBill = async () => {
+    if (!addSeed.trim()) return;
+    setAddStep(2);
+    setAddError('');
+    try {
+      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1500,
+          tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+          messages: [{ role: 'user',
+            content: `Search for this bill or regulatory action and return structured data: "${addSeed}"\n\nReturn ONLY compact valid JSON — no markdown, no backticks:\n{"introduced":"2026-MM-DD","title":"Official short title","id":"S.XXXX or H.R.XXXX","chamber":"Senate or House","party":"R or D or Bipartisan","sponsor":"Lastname (D-ST)","domain":"prediction-markets or crypto or monetary-policy or fintech or financial-stability","category":"Prediction Markets or Digital Assets or Stablecoins or Market Structure or Banking or AML/KYC or Fintech","summary":"One clear sentence.","teeth":"Key enforcement mechanism.","detail":"Full text, 2-4 sentences.","status":"Introduced","notes":"Notable context or empty string."}`
+          }]
+        })
+      });
+      const data = await resp.json();
+      const text = (data.content || [])
+        .filter(b => b.type === 'text').map(b => b.text).join('');
+      const m = text.match(/\{[\s\S]*\}/);
+      if (m) {
+        const raw = JSON.parse(m[0]);
+        setAddDraft({
+          introduced: raw.introduced || raw.date || '',
+          title: raw.title || raw.name || '',
+          id: raw.id || '',
+          chamber: raw.chamber || 'Senate',
+          party: raw.party || 'D',
+          sponsor: raw.sponsor || raw.sponsors || '',
+          domain: raw.domain || 'prediction-markets',
+          category: raw.category || raw.cat || 'Prediction Markets',
+          summary: raw.summary || '',
+          teeth: raw.teeth || '',
+          detail: raw.detail || '',
+          status: raw.status || 'Introduced',
+          notes: raw.notes || '',
+          isNew: true,
+        });
+        setAddStep(3);
+      } else {
+        setAddError('Could not parse bill data. Try a more specific input.');
+        setAddStep(1);
+      }
+    } catch (err) {
+      setAddError(`Fetch error: ${err.message}`);
+      setAddStep(1);
+    }
+  };
+
+  const doConfirmBill = () => {
+    if (!addDraft) return;
+    setBills(prev => {
+      const next = [addDraft, ...prev];
+      saveToStorage(next, timeline);
+      return next;
+    });
+    setShowAddModal(false);
+    setAddStep(1);
+    setAddSeed('');
+    setAddDraft(null);
+    setAddError('');
+  };
+
+  const closeAddModal = () => {
+    setShowAddModal(false);
+    setAddStep(1);
+    setAddSeed('');
+    setAddDraft(null);
+    setAddError('');
+  };
+
   const filteredTl = timeline.filter(e => {
     if (tlFilter.agency !== 'all' && e.agency !== tlFilter.agency) return false;
     if (tlFilter.action !== 'all' && e.action !== tlFilter.action) return false;
@@ -600,6 +864,7 @@ const App = () => {
   });
 
   const filteredBills = bills.filter(b => {
+    if (billFilter.domain !== 'all' && b.domain !== billFilter.domain) return false;
     if (billFilter.cat !== 'all' && b.category !== billFilter.cat) return false;
     if (billFilter.party !== 'all' && b.party !== billFilter.party) return false;
     if (billFilter.q) {
@@ -610,19 +875,17 @@ const App = () => {
     return true;
   });
 
-  const billStats = activeTab === 'bills' ? [
-    ['Total Bills', bills.length],
-    ['Bipartisan', bills.filter(b => b.party === 'Bipartisan').length],
-    ['In Committee', bills.filter(b => b.status === 'Committee').length],
-    ['Floor Vote', bills.filter(b => b.status === 'Floor Vote').length],
-    ['Introduced', bills.filter(b => b.status === 'Introduced').length],
-  ] : [
-    ['Total Actions', timeline.length],
-    ['CFTC', timeline.filter(e => e.agency === 'CFTC').length],
-    ['Fed', timeline.filter(e => e.agency === 'Fed').length],
-    ['Enforcement', timeline.filter(e => e.action === 'Enforcement').length],
-    ['Research', timeline.filter(e => e.action === 'Research').length],
-  ];
+  const statsData = activeTab === 'bills'
+    ? Object.entries(DOMAIN).map(([k, v]) => ({
+        label: v.label.split(' ')[0], val: bills.filter(b => b.domain === k).length, color: v.a
+      }))
+    : [
+        { label:'Total', val:timeline.length, color:'var(--text)' },
+        { label:'CFTC', val:timeline.filter(e => e.agency === 'CFTC').length, color:'var(--purple)' },
+        { label:'Fed', val:timeline.filter(e => e.agency === 'Fed').length, color:'var(--amber)' },
+        { label:'Enforcement', val:timeline.filter(e => e.action === 'Enforcement').length, color:'var(--red)' },
+        { label:'Research', val:timeline.filter(e => e.action === 'Research').length, color:'var(--teal)' },
+      ];
 
   return (
     <div style={{minHeight:'100vh'}}>
@@ -655,12 +918,12 @@ const App = () => {
       {/* STATS BAR */}
       <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:1,
         backgroundColor:'var(--border)',marginBottom:0}}>
-        {billStats.map(([label, val], i) =>
+        {statsData.map((s, i) =>
           <div key={i} style={{backgroundColor:'var(--bg-secondary)',
             padding:'8px 12px',textAlign:'center'}}>
-            <div style={{fontSize:10,color:'var(--mid-gray)',marginBottom:2}}>{label}</div>
+            <div style={{fontSize:10,color:'var(--mid-gray)',marginBottom:2}}>{s.label}</div>
             <div style={{fontSize:20,fontWeight:500,
-              color:'var(--text)',lineHeight:1}}>{val}</div>
+              color:s.color,lineHeight:1}}>{s.val}</div>
           </div>
         )}
       </div>
@@ -699,6 +962,12 @@ const App = () => {
               value={billFilter.q}
               onChange={e => setBillFilter(f => ({...f, q: e.target.value}))}
               style={{width:170, borderRadius:20}} />
+            <select value={billFilter.domain}
+              onChange={e => setBillFilter(f => ({...f, domain: e.target.value}))}>
+              <option value="all">All domains</option>
+              {Object.entries(DOMAIN).map(([k,v]) =>
+                <option key={k} value={k}>{v.label}</option>)}
+            </select>
             <select value={billFilter.cat}
               onChange={e => setBillFilter(f => ({...f, cat: e.target.value}))}>
               <option value="all">All categories</option>
@@ -720,6 +989,12 @@ const App = () => {
                   border: `1px solid ${refreshing ? 'var(--border)' : 'var(--navy)'}`,
                   cursor: refreshing ? 'wait' : 'pointer'}}>
                 {refreshing ? 'Searching...' : 'Refresh ↗'}
+              </button>
+              <button onClick={() => setShowAddModal(true)}
+                style={{fontSize:12,padding:'5px 12px',borderRadius:6,
+                  backgroundColor:'var(--green)',color:'white',border:'none',
+                  cursor:'pointer'}}>
+                + Add bill
               </button>
               <button onClick={() => window.print()}>Print</button>
             </div>
@@ -871,6 +1146,21 @@ const App = () => {
             : `${filteredTl.length} of ${timeline.length} entries shown`}
         </span>
       </div>
+
+      {/* ADD BILL MODAL */}
+      {showAddModal && (
+        <AddBillModal
+          step={addStep}
+          seed={addSeed}
+          onSeedChange={setAddSeed}
+          onFetch={doFetchBill}
+          draft={addDraft}
+          onDraftChange={(key, val) => setAddDraft(d => ({...d, [key]: val}))}
+          onConfirm={doConfirmBill}
+          onClose={closeAddModal}
+          error={addError}
+        />
+      )}
     </div>
   );
 };
