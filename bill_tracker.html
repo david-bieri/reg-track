@@ -1,1 +1,1612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Financial Regulation Tracker · SPIA · VT</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <style>
+:root {
+  --navy: #0f1e2e;
+  --blue: #1d6fa4;
+  --light-blue: #dbeafe;
+  --red: #dc2626;
+  --red-bg: #fee2e2;
+  --red-text: #991b1b;
+  --green: #16a34a;
+  --green-bg: #dcfce7;
+  --green-text: #14532d;
+  --purple: #7c3aed;
+  --purple-bg: #f5f3ff;
+  --purple-text: #4c1d95;
+  --orange: #d97706;
+  --orange-bg: #fef3c7;
+  --orange-text: #92400e;
+  --teal: #0891b2;
+  --teal-bg: #ecfeff;
+  --teal-text: #164e63;
+  --amber: #b45309;
+  --amber-bg: #fffbeb;
+  --amber-text: #78350f;
+  --gray-bg: #f4f4f5;
+  --border: #e5e7eb;
+  --mid-gray: #9ca3af;
+  --text: #1a1a1a;
+  --text-muted: #555;
+  --bg: #ffffff;
+  --bg-secondary: #f8f8f8;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text: #f0f0f0;
+    --text-muted: #aaa;
+    --bg: #111827;
+    --bg-secondary: #1f2937;
+    --border: #374151;
+    --gray-bg: #1f2937;
+    --light-blue: #1e3a5f;
+    --red-bg: #450a0a;
+    --green-bg: #052e16;
+    --purple-bg: #2e1065;
+    --orange-bg: #431407;
+    --teal-bg: #083344;
+    --amber-bg: #451a03;
+  }
+}
+html.dark {
+  --text: #f0f0f0;
+  --text-muted: #aaa;
+  --bg: #111827;
+  --bg-secondary: #1f2937;
+  --border: #374151;
+  --gray-bg: #1f2937;
+  --light-blue: #1e3a5f;
+  --red-bg: #450a0a;
+  --green-bg: #052e16;
+  --purple-bg: #2e1065;
+  --orange-bg: #431407;
+  --teal-bg: #083344;
+  --amber-bg: #451a03;
+}
+html.light {
+  --text: #1a1a1a;
+  --text-muted: #555;
+  --bg: #ffffff;
+  --bg-secondary: #f8f8f8;
+  --border: #e5e7eb;
+  --gray-bg: #f4f4f5;
+  --light-blue: #dbeafe;
+  --red-bg: #fee2e2;
+  --green-bg: #dcfce7;
+  --purple-bg: #f5f3ff;
+  --orange-bg: #fef3c7;
+  --teal-bg: #ecfeff;
+  --amber-bg: #fffbeb;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+       font-size: 14px; background: var(--bg); color: var(--text); }
+table { border-collapse: collapse; width: 100%; }
+input, select, textarea { font-family: inherit; font-size: 12px;
+  padding: 5px 8px; border: 1px solid var(--border);
+  border-radius: 4px; background: var(--bg); color: var(--text); }
+button { font-family: inherit; cursor: pointer; border: 1px solid var(--border);
+  border-radius: 6px; padding: 5px 12px; background: var(--bg);
+  color: var(--text); font-size: 12px; }
+button:hover { background: var(--bg-secondary); }
+a { color: var(--blue); text-decoration: none; }
+a:hover { text-decoration: underline; }
+@media print { .no-print { display: none !important; } tr { break-inside: avoid; } }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+/* ── colour-token maps ──────────────────────────── */
+const CAT = {
+  'Prediction Markets':  { bg:'var(--purple-bg)', t:'var(--purple-text)', a:'var(--purple)' },
+  'Digital Assets':      { bg:'var(--teal-bg)',   t:'var(--teal-text)',   a:'var(--teal)' },
+  'Stablecoins':         { bg:'var(--blue)',      t:'#fff',              a:'var(--blue)' },
+  'Market Structure':    { bg:'var(--orange-bg)', t:'var(--orange-text)', a:'var(--orange)' },
+  'Banking':             { bg:'var(--amber-bg)',  t:'var(--amber-text)',  a:'var(--amber)' },
+  'AML/KYC':             { bg:'var(--red-bg)',    t:'var(--red-text)',    a:'var(--red)' },
+  'Fintech':             { bg:'var(--green-bg)',  t:'var(--green-text)',  a:'var(--green)' },
+};
 
+const PARTY = {
+  R: { bg:'#fee2e2', t:'#991b1b', a:'#dc2626' },
+  D: { bg:'#dbeafe', t:'#1e40af', a:'#2563eb' },
+  Bipartisan: { bg:'#f3e8ff', t:'#6b21a8', a:'#7c3aed' },
+};
+
+const CHAMBERS = { Senate:'S', House:'H', Joint:'J' };
+
+const STAGES = ['Introduced','Committee','Floor Vote','Other Chamber','Signed'];
+
+const AGENCY_META = {
+  CFTC:  { bg:'var(--purple-bg)', t:'var(--purple-text)', a:'var(--purple)' },
+  SEC:   { bg:'var(--teal-bg)',   t:'var(--teal-text)',   a:'var(--teal)' },
+  Fed:   { bg:'var(--amber-bg)',  t:'var(--amber-text)',  a:'var(--amber)' },
+  OCC:   { bg:'var(--orange-bg)', t:'var(--orange-text)', a:'var(--orange)' },
+  FDIC:  { bg:'var(--green-bg)',  t:'var(--green-text)',  a:'var(--green)' },
+  DOJ:   { bg:'var(--red-bg)',    t:'var(--red-text)',    a:'var(--red)' },
+  Treasury:{ bg:'var(--light-blue)',t:'#1e3a5f',          a:'var(--blue)' },
+  FinCEN:{ bg:'var(--gray-bg)',   t:'var(--text-muted)',  a:'var(--mid-gray)' },
+};
+
+const ACTION_META = {
+  'Final Rule':       { bg:'var(--green-bg)',  t:'var(--green-text)',  a:'var(--green)' },
+  'Proposed Rule':    { bg:'var(--orange-bg)', t:'var(--orange-text)', a:'var(--orange)' },
+  'Guidance':         { bg:'var(--teal-bg)',   t:'var(--teal-text)',   a:'var(--teal)' },
+  'Enforcement':      { bg:'var(--red-bg)',    t:'var(--red-text)',    a:'var(--red)' },
+  'Staff Letter':     { bg:'var(--purple-bg)', t:'var(--purple-text)', a:'var(--purple)' },
+  'Research':         { bg:'var(--amber-bg)',  t:'var(--amber-text)',  a:'var(--amber)' },
+  'Inquiry':          { bg:'var(--light-blue)',t:'#1e3a5f',           a:'var(--blue)' },
+  'No-Action Letter': { bg:'var(--gray-bg)',   t:'var(--text-muted)',  a:'var(--mid-gray)' },
+};
+
+const DOMAIN = {
+  'prediction-markets': {
+    label: 'Prediction markets',
+    a: '#dc2626', bg: '#fee2e2', t: '#991b1b'
+  },
+  'crypto': {
+    label: 'Crypto / digital assets',
+    a: '#1d6fa4', bg: '#dbeafe', t: '#1e3a8a'
+  },
+  'monetary-policy': {
+    label: 'Monetary policy',
+    a: '#16a34a', bg: '#dcfce7', t: '#14532d'
+  },
+  'fintech': {
+    label: 'FinTech',
+    a: '#7c3aed', bg: '#f5f3ff', t: '#4c1d95'
+  },
+  'financial-stability': {
+    label: 'Financial stability',
+    a: '#d97706', bg: '#fef3c7', t: '#92400e'
+  },
+};
+
+/* ── seed data: bills ──────────────────────────── */
+const SEED_BILLS = [
+  { id:'S.1234', title:'Prediction Market Integrity Act',
+    sponsor:'Sen. Lummis (R-WY)', party:'R', chamber:'Senate',
+    category:'Prediction Markets', domain:'prediction-markets', status:'Committee',
+    introduced:'2026-03-05',
+    summary:'Establishes CFTC as primary regulator of event contracts on registered prediction markets. Defines lawful event contracts and prohibits binary contracts on assassination, terrorism, and election outcomes involving minors.',
+    teeth:'Civil penalties up to $1M per violation; criminal referral for manipulation.',
+    detail:'Referred to Senate Agriculture Committee. Hearing scheduled April 8, 2026.' },
+  { id:'H.R.2200', title:'Decentralized Prediction Market Study Act',
+    sponsor:'Rep. Emmer (R-MN)', party:'R', chamber:'House',
+    category:'Prediction Markets', domain:'prediction-markets', status:'Introduced',
+    introduced:'2026-03-08',
+    summary:'Directs GAO to conduct a 12-month study on decentralized prediction markets, including Polymarket and Kalshi, evaluating systemic risk, information quality, and existing regulatory gaps.',
+    teeth:'Report due to Congress within 12 months; no direct penalty provisions.',
+    detail:'Referred to House Financial Services Committee.' },
+  { id:'S.1301', title:'Event Contract Clarity Act',
+    sponsor:'Sen. Hagerty (R-TN)', party:'R', chamber:'Senate',
+    category:'Prediction Markets', domain:'prediction-markets', status:'Committee',
+    introduced:'2026-03-10',
+    summary:'Amends the Commodity Exchange Act to clarify that event contracts on economic indicators (CPI, NFP, GDP) are lawful commodity interests eligible for clearing on DCMs.',
+    teeth:'Safe harbor for compliant DCMs; sunset clause at 5 years.',
+    detail:'Co-sponsored by Sen. Tillis (R-NC). Markup tentatively scheduled May 2026.' },
+  { id:'H.R.2350', title:'Election Betting Prohibition Act',
+    sponsor:'Rep. Sherman (D-CA)', party:'D', chamber:'House',
+    category:'Prediction Markets', domain:'prediction-markets', status:'Introduced',
+    introduced:'2026-03-12',
+    summary:'Prohibits any CFTC-regulated exchange from listing event contracts whose payoff depends on the outcome of any federal, state, or local election.',
+    teeth:'$500K fine per contract listed; exchange license suspension.',
+    detail:'Referred to House Agriculture Committee and House Financial Services Committee.' },
+  { id:'S.1400', title:'CFTC Prediction Market Oversight Funding Act',
+    sponsor:'Sen. Boozman (R-AR)', party:'R', chamber:'Senate',
+    category:'Prediction Markets', domain:'prediction-markets', status:'Floor Vote',
+    introduced:'2026-03-15',
+    summary:'Appropriates $30M to the CFTC for FY2027 specifically earmarked for supervision and examination of designated contract markets listing event contracts.',
+    teeth:'Annual GAO audit of CFTC spending on prediction market oversight.',
+    detail:'Passed Senate Agriculture Committee 14-8. Floor vote expected week of April 14.' },
+  { id:'H.R.2500', title:'State Prediction Market Compact Act',
+    sponsor:'Rep. Hill (R-AR)', party:'Bipartisan', chamber:'House',
+    category:'Prediction Markets', domain:'prediction-markets', status:'Introduced',
+    introduced:'2026-03-18',
+    summary:'Authorizes states to form interstate compacts for regulating prediction markets that operate below the federal threshold ($25M annual volume), preserving CFTC authority above that level.',
+    teeth:'Federal preemption for markets above threshold; state AG enforcement below.',
+    detail:'Bipartisan bill with Rep. Torres (D-NY) as original co-sponsor.' },
+  { id:'S.1500', title:'Prediction Market Consumer Protection Act',
+    sponsor:'Sen. Warren (D-MA)', party:'D', chamber:'Senate',
+    category:'Prediction Markets', domain:'prediction-markets', status:'Committee',
+    introduced:'2026-03-22',
+    summary:'Requires prediction market exchanges to maintain a segregated customer fund, disclose resolution sources, and file quarterly risk reports with the CFTC.',
+    teeth:'Treble damages in private right of action for customer fund shortfalls.',
+    detail:'Referred to Senate Banking Committee. Warren seeks joint jurisdiction with Agriculture.' },
+  { id:'H.R.2650', title:'Forecasting Transparency in Government Act',
+    sponsor:'Rep. Auchincloss (D-MA)', party:'D', chamber:'House',
+    category:'Prediction Markets', domain:'prediction-markets', status:'Introduced',
+    introduced:'2026-03-26',
+    summary:'Mandates that OMB publish real-time forecasting dashboards incorporating prediction market prices for key economic and policy indicators.',
+    teeth:'OMB compliance deadline 18 months after enactment; Inspector General review.',
+    detail:'Referred to House Oversight Committee. Companion to earlier Senate resolution.' },
+];
+
+/* ── seed data: timeline ───────────────────────── */
+const SEED_TIMELINE = [
+  { id:'tl-1', date:'2026-03-04', agency:'Fed', action:'Research', domain:'prediction-markets', url:'',
+    title:'FEDS Working Paper: Price Discovery in Event Markets',
+    detail:'Board staff analyze information aggregation efficiency in CFTC-regulated prediction markets vs. traditional derivatives. Finds prediction market prices converge faster to fundamental value for binary outcomes.' },
+  { id:'tl-2', date:'2026-03-07', agency:'CFTC', action:'Guidance', domain:'prediction-markets', url:'',
+    title:'Staff Advisory on Event Contract Listing Standards',
+    detail:'CFTC Division of Market Oversight issues advisory clarifying conditions under which DCMs may self-certify new event contracts without full Commission review.' },
+  { id:'tl-3', date:'2026-03-11', agency:'SEC', action:'Staff Letter', domain:'prediction-markets', url:'',
+    title:'Staff Bulletin on Prediction Market Token Classification',
+    detail:'Division of Corporation Finance issues guidance that tokenized prediction market positions may constitute securities depending on the Howey analysis of the specific contract structure.' },
+  { id:'tl-4', date:'2026-03-13', agency:'CFTC', action:'Enforcement', domain:'prediction-markets', url:'',
+    title:'CFTC Enforcement Action: Unregistered Offshore Platform',
+    detail:'CFTC files civil complaint against offshore prediction market for offering unregistered event contracts to U.S. persons. Seeks permanent injunction and $12M in disborgement.' },
+  { id:'tl-5', date:'2026-03-17', agency:'Treasury', action:'Inquiry', domain:'prediction-markets', url:'',
+    title:'Treasury RFI on Prediction Market Tax Treatment',
+    detail:'IRS/Treasury issue Request for Information on appropriate tax treatment of prediction market gains — whether to classify as capital gains, ordinary income, or gambling winnings.' },
+  { id:'tl-6', date:'2026-03-19', agency:'OCC', action:'Guidance', domain:'prediction-markets', url:'',
+    title:'OCC Interpretive Letter: Bank Participation in Prediction Markets',
+    detail:'OCC concludes that national banks may clear and settle prediction market contracts as part of permissible banking activities, subject to risk management safeguards.' },
+  { id:'tl-7', date:'2026-03-21', agency:'CFTC', action:'Proposed Rule', domain:'prediction-markets', url:'',
+    title:'CFTC NPRM: Event Contract Margin Requirements',
+    detail:'Commission proposes minimum margin requirements for event contracts on designated contract markets. Comment period 60 days. Proposes 10% initial margin for standard binary contracts.' },
+  { id:'tl-8', date:'2026-03-24', agency:'Fed', action:'Guidance', domain:'prediction-markets', url:'', isNew:true,
+    title:'SR Letter 26-4: Supervisory Expectations for Bank Prediction Market Exposure',
+    detail:'Federal Reserve issues SR letter setting expectations for state member banks engaging in prediction market clearing, including capital charges and concentration limits.' },
+  { id:'tl-9', date:'2026-03-27', agency:'FinCEN', action:'Proposed Rule', domain:'prediction-markets', url:'', isNew:true,
+    title:'FinCEN NPRM: AML/KYC Requirements for Prediction Market Platforms',
+    detail:'FinCEN proposes to designate prediction market platforms as money services businesses, requiring full BSA/AML compliance, SAR filing, and customer identification programs.' },
+  { id:'tl-10', date:'2026-03-30', agency:'DOJ', action:'Inquiry', domain:'prediction-markets', url:'', isNew:true,
+    title:'DOJ Antitrust Inquiry: Prediction Market Concentration',
+    detail:'DOJ Antitrust Division opens preliminary inquiry into market concentration among prediction market exchanges, focusing on potential barriers to entry and data exclusivity agreements.' },
+  { id:'tl-11', date:'2026-04-01', agency:'Treasury', action:'Proposed Rule', domain:'crypto', isNew:true,
+    url:'https://home.treasury.gov/news/press-releases/sb0428',
+    title:'Treasury NPRM: GENIUS Act State-Level Regulatory Regime Principles',
+    detail:'Treasury issues its first NPRM under the GENIUS Act, establishing broad-based principles for determining whether a state-level payment stablecoin regulatory regime is substantially similar to the federal framework. Applies to issuers with consolidated outstanding issuance ≤ $10B who opt for state regulation. Public comment period: 60 days from Federal Register publication via regulations.gov. Builds on the September 2025 ANPRM.' },
+];
+
+/* ── reusable components ───────────────────────── */
+const Pill = ({ label, a, bg, t, sm }) => (
+  <span style={{display:'inline-block',
+    padding: sm ? '1px 7px' : '2px 9px',
+    fontSize: sm ? 10 : 11, fontWeight: 500,
+    borderRadius: 20, whiteSpace: 'nowrap',
+    backgroundColor: bg, color: t,
+    border: `1px solid ${a}30`}}>
+    {label}
+  </span>
+);
+
+const StatusDots = ({ status }) => {
+  const idx = STAGES.indexOf(status);
+  const dead = status === 'Dead';
+  return (
+    <div style={{display:'flex',alignItems:'center',gap:3}}>
+      {STAGES.map((s, i) => (
+        <React.Fragment key={s}>
+          <div title={s} style={{width:8,height:8,borderRadius:'50%',flexShrink:0,
+            backgroundColor: dead ? 'var(--red)' : i <= idx
+              ? 'var(--green)' : 'var(--border)'}} />
+          {i < STAGES.length - 1 &&
+            <div style={{width:9,height:2,
+              backgroundColor: !dead && i < idx
+                ? 'var(--green)' : 'var(--border)'}} />}
+        </React.Fragment>
+      ))}
+      <span style={{fontSize:10,color:'var(--text-muted)',
+        marginLeft:4,whiteSpace:'nowrap'}}>
+        {dead ? 'Dead' : status}
+      </span>
+    </div>
+  );
+};
+
+/* ── BillRows component ────────────────────────── */
+const BillRows = ({ bill: b, expanded, onToggle, editMode, onUpdate }) => {
+  const c = CAT[b.category] || { bg:'var(--gray-bg)', t:'var(--text-muted)', a:'var(--mid-gray)' };
+  const d = DOMAIN[b.domain] || { a:'var(--mid-gray)', bg:'var(--gray-bg)', t:'var(--text-muted)' };
+  const p = PARTY[b.party] || PARTY.R;
+  const ch = CHAMBERS[b.chamber] || '?';
+  const dt = b.introduced.slice(5).replace('-','/');
+  const sel = expanded;
+
+  const rowBase = {
+    borderLeft: `4px solid ${d.a}`,
+    cursor: 'pointer',
+    backgroundColor: sel ? `${d.bg}` : 'var(--bg)',
+    transition: 'background-color .15s',
+  };
+
+  return (
+    <React.Fragment>
+      {/* Row 1 — metadata */}
+      <tr style={{...rowBase, borderBottom: sel ? 'none' : '1px solid var(--border)'}}
+          onClick={() => onToggle(b.id)}>
+        <td style={{padding:'7px 8px 7px 12px',fontSize:11,color:'var(--text-muted)',
+          whiteSpace:'nowrap'}}>{dt}</td>
+        <td style={{padding:'7px 8px'}}>
+          <span style={{fontWeight:600,fontSize:13}}>{b.id}</span>
+          <span style={{fontSize:12,marginLeft:6,color:'var(--text)'}}>{b.title}</span>
+        </td>
+        <td style={{padding:'7px 8px',fontSize:11,color:'var(--text-muted)'}}>{b.sponsor}</td>
+        <td style={{padding:'7px 8px'}}>
+          <Pill label={b.category} {...c} sm />
+        </td>
+        <td style={{padding:'7px 8px'}}>
+          <span style={{display:'flex',alignItems:'center',gap:4}}>
+            <Pill label={b.party} {...p} sm />
+            <span style={{fontSize:10,color:'var(--mid-gray)',fontWeight:500}}>{ch}</span>
+          </span>
+        </td>
+        <td style={{padding:'7px 8px'}}><StatusDots status={b.status} /></td>
+        <td style={{padding:'7px 8px',textAlign:'center',fontSize:12,color:'var(--mid-gray)'}}>
+          {sel ? '▾' : '▸'}
+        </td>
+      </tr>
+
+      {/* Row 2 — summary + teeth card */}
+      <tr style={{...rowBase, borderBottom: expanded ? 'none' : '1px solid var(--border)'}}
+          onClick={() => onToggle(b.id)}>
+        <td />
+        <td colSpan={5} style={{padding:'0 8px 8px'}}>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',
+            borderRadius:6,overflow:'hidden',border:`1px solid ${c.a}20`,fontSize:12}}>
+            <div style={{padding:'8px 12px',backgroundColor:`${c.bg}55`,lineHeight:1.5}}>
+              <div style={{fontSize:10,fontWeight:600,color:c.t,marginBottom:3,
+                textTransform:'uppercase',letterSpacing:'0.04em'}}>What it does</div>
+              <div style={{color:'var(--text)'}}>{b.summary}</div>
+            </div>
+            <div style={{padding:'8px 12px',backgroundColor:'var(--bg-secondary)',
+              borderLeft:`1px solid ${c.a}20`,lineHeight:1.5}}>
+              <div style={{fontSize:10,fontWeight:600,color:'var(--text-muted)',marginBottom:3,
+                textTransform:'uppercase',letterSpacing:'0.04em'}}>Teeth / key detail</div>
+              <div style={{color:'var(--text)'}}>{b.teeth}</div>
+            </div>
+          </div>
+        </td>
+        <td />
+      </tr>
+
+      {/* Row 3 — expanded detail + edit controls */}
+      {expanded && (
+        <tr style={{...rowBase, borderBottom:'1px solid var(--border)'}}>
+          <td />
+          <td colSpan={5} style={{padding:'0 8px 10px'}}>
+            <div style={{display:'grid',gridTemplateColumns:'2fr 1fr 1fr',gap:10,fontSize:12}}>
+              <div style={{lineHeight:1.55}}>
+                <div style={{fontSize:10,fontWeight:600,color:'var(--text-muted)',marginBottom:3,
+                  textTransform:'uppercase',letterSpacing:'0.04em'}}>Detail</div>
+                <div style={{color:'var(--text)'}}>{b.detail}</div>
+              </div>
+              <div>
+                <div style={{fontSize:10,fontWeight:600,color:'var(--text-muted)',marginBottom:3,
+                  textTransform:'uppercase',letterSpacing:'0.04em'}}>Info</div>
+                <div style={{fontSize:11,color:'var(--text-muted)',lineHeight:1.7}}>
+                  Introduced: {b.introduced}<br/>
+                  Chamber: {b.chamber}<br/>
+                  Party: {b.party}<br/>
+                  Domain: <Pill label={d.label || b.domain} a={d.a} bg={d.bg} t={d.t} sm />
+                </div>
+              </div>
+              {editMode && (
+                <div style={{display:'flex',flexDirection:'column',gap:6}}>
+                  <div style={{fontSize:10,fontWeight:600,color:'var(--text-muted)',
+                    textTransform:'uppercase',letterSpacing:'0.04em'}}>Edit</div>
+                  <select value={b.status}
+                    onChange={e => onUpdate(b.id, 'status', e.target.value)}>
+                    {STAGES.map(s => <option key={s} value={s}>{s}</option>)}
+                    <option value="Dead">Dead</option>
+                  </select>
+                  <select value={b.domain || 'prediction-markets'}
+                    onChange={e => onUpdate(b.id, 'domain', e.target.value)}>
+                    {Object.entries(DOMAIN).map(([k,v]) =>
+                      <option key={k} value={k}>{v.label}</option>)}
+                  </select>
+                  <input type="number" min={0} max={100} placeholder="P(pass) %"
+                    value={b.pPass || ''}
+                    onChange={e => onUpdate(b.id, 'pPass', e.target.value)} />
+                  <textarea rows={2} placeholder="Notes..."
+                    value={b.notes || ''}
+                    onChange={e => onUpdate(b.id, 'notes', e.target.value)} />
+                </div>
+              )}
+            </div>
+          </td>
+          <td />
+        </tr>
+      )}
+    </React.Fragment>
+  );
+};
+
+/* ── TimelineRow component ─────────────────────── */
+const TimelineRow = ({ entry: e, expanded, onToggle, editMode, onUpdate }) => {
+  const ag = AGENCY_META[e.agency] || { bg:'var(--gray-bg)', t:'var(--text-muted)', a:'var(--mid-gray)' };
+  const ac = ACTION_META[e.action] || { bg:'var(--gray-bg)', t:'var(--text-muted)', a:'var(--mid-gray)' };
+  const dt = e.date.slice(5).replace('-','/');
+
+  const rowBase = {
+    borderLeft: `4px solid ${ag.a}`,
+    cursor: 'pointer',
+    backgroundColor: expanded ? `${ag.bg}` : 'var(--bg)',
+    transition: 'background-color .15s',
+  };
+
+  return (
+    <React.Fragment>
+      {/* Row 1 — metadata */}
+      <tr style={{...rowBase, borderBottom: expanded ? 'none' : '1px solid var(--border)'}}
+          onClick={() => onToggle(e.id)}>
+        <td style={{padding:'7px 8px 7px 12px',fontSize:11,color:'var(--text-muted)',
+          whiteSpace:'nowrap'}}>{dt}</td>
+        <td style={{padding:'7px 8px'}}>
+          <Pill label={e.agency} {...ag} sm />
+        </td>
+        <td style={{padding:'7px 8px'}}>
+          <Pill label={e.action} {...ac} sm />
+        </td>
+        <td style={{padding:'7px 8px'}}>
+          <span style={{fontWeight:500,fontSize:12,color:'var(--text)'}}>
+            {e.title}
+          </span>
+          {e.isNew && (
+            <span style={{marginLeft:6,fontSize:9,padding:'1px 6px',borderRadius:20,
+              backgroundColor:'var(--red)',color:'#fff',fontWeight:600,
+              verticalAlign:'middle'}}>NEW</span>
+          )}
+          <div style={{fontSize:11,color:'var(--text-muted)',marginTop:2,lineHeight:1.45}}>
+            {e.detail.length > 120 && !expanded
+              ? e.detail.slice(0, 120) + '…' : e.detail}
+          </div>
+        </td>
+        <td style={{padding:'7px 8px',textAlign:'center',fontSize:12,color:'var(--mid-gray)'}}>
+          {expanded ? '▾' : '▸'}
+        </td>
+      </tr>
+
+      {/* Row 2 — expanded detail + edit */}
+      {expanded && (
+        <tr style={{...rowBase, borderBottom:'1px solid var(--border)'}}>
+          <td />
+          <td colSpan={3} style={{padding:'0 8px 10px'}}>
+            <div style={{display:'grid',gridTemplateColumns:'2fr 1fr',gap:12,fontSize:12}}>
+              <div style={{lineHeight:1.55}}>
+                <div style={{fontSize:10,fontWeight:600,color:'var(--text-muted)',marginBottom:3,
+                  textTransform:'uppercase',letterSpacing:'0.04em'}}>Full detail</div>
+                <div style={{color:'var(--text)'}}>{e.detail}</div>
+              </div>
+              <div>
+                {editMode ? (
+                  <div style={{display:'flex',flexDirection:'column',gap:6}}>
+                    <div style={{fontSize:10,fontWeight:600,color:'var(--text-muted)',
+                      textTransform:'uppercase',letterSpacing:'0.04em'}}>Edit</div>
+                    <select value={e.action}
+                      onChange={ev => onUpdate(e.id, 'action', ev.target.value)}>
+                      {Object.keys(ACTION_META).map(a =>
+                        <option key={a} value={a}>{a}</option>)}
+                    </select>
+                    <select value={e.domain || 'prediction-markets'}
+                      onChange={ev => onUpdate(e.id, 'domain', ev.target.value)}>
+                      {Object.entries(DOMAIN).map(([k,v]) =>
+                        <option key={k} value={k}>{v.label}</option>)}
+                    </select>
+                    <input type="text" placeholder="Source URL..."
+                      value={e.url || ''}
+                      onChange={ev => onUpdate(e.id, 'url', ev.target.value)} />
+                    <textarea rows={2} placeholder="Notes..."
+                      value={e.notes || ''}
+                      onChange={ev => onUpdate(e.id, 'notes', ev.target.value)} />
+                  </div>
+                ) : (
+                  <div>
+                    <div style={{fontSize:10,fontWeight:600,color:'var(--text-muted)',marginBottom:3,
+                      textTransform:'uppercase',letterSpacing:'0.04em'}}>Info</div>
+                    <div style={{fontSize:11,color:'var(--text-muted)',lineHeight:1.7}}>
+                      Date: {e.date}<br/>
+                      Agency: {e.agency}<br/>
+                      Action: {e.action}<br/>
+                      {e.domain && (() => {
+                        const d = DOMAIN[e.domain] || { a:'var(--mid-gray)', bg:'var(--gray-bg)', t:'var(--text-muted)', label: e.domain };
+                        return <><span>Domain: </span><Pill label={d.label} a={d.a} bg={d.bg} t={d.t} sm /></>;
+                      })()}
+                    </div>
+                    {e.url && (
+                      <div style={{marginTop:8}}>
+                        <a href={e.url} target="_blank" rel="noopener noreferrer"
+                          style={{fontSize:11,color:'var(--blue)',display:'inline-flex',
+                            alignItems:'center',gap:3}}>
+                          Source ↗
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </td>
+          <td />
+        </tr>
+      )}
+    </React.Fragment>
+  );
+};
+
+/* ── AddBillModal component ────────────────────── */
+const AddBillModal = ({
+  step, seed, onSeedChange, onFetch, draft, onDraftChange,
+  onConfirm, onClose, error
+}) => {
+  React.useEffect(() => {
+    const handler = e => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [onClose]);
+
+  return (
+    <div onClick={onClose} style={{
+      position:'fixed',inset:0,backgroundColor:'rgba(0,0,0,0.5)',
+      display:'flex',alignItems:'center',justifyContent:'center',
+      zIndex:1000}}>
+      <div onClick={e => e.stopPropagation()} style={{
+        backgroundColor:'var(--bg)',borderRadius:8,
+        border:'1px solid var(--border)',width:560,maxWidth:'90vw',
+        maxHeight:'85vh',overflowY:'auto',
+        boxShadow:'0 20px 60px rgba(0,0,0,0.3)'}}>
+
+        <div style={{padding:'14px 16px',borderBottom:'1px solid var(--border)',
+          display:'flex',justifyContent:'space-between',alignItems:'center',
+          backgroundColor:'var(--bg-secondary)'}}>
+          <div>
+            <span style={{fontWeight:500,fontSize:14}}>Add bill</span>
+            <span style={{fontSize:11,color:'var(--text-muted)',marginLeft:8}}>
+              {step === 1 ? 'Enter a bill name, URL, or description'
+               : step === 2 ? 'Searching...'
+               : 'Review and confirm'}
+            </span>
+          </div>
+          <button onClick={onClose}
+            style={{background:'none',border:'none',fontSize:18,
+              cursor:'pointer',color:'var(--text-muted)',lineHeight:1}}>×</button>
+        </div>
+
+        <div style={{padding:16}}>
+          {step === 1 && (
+            <div>
+              <p style={{fontSize:12,color:'var(--text-muted)',marginBottom:12,lineHeight:1.6}}>
+                Paste a bill name (e.g. "PREDICT Act"), a congress.gov URL,
+                a press release URL, or a short description. The AI will search
+                for it and pre-fill all fields.
+              </p>
+              <textarea value={seed} onChange={e => onSeedChange(e.target.value)}
+                placeholder='e.g. GENIUS Act stablecoin regulation 2026...'
+                rows={3} style={{width:'100%',marginBottom:10,resize:'vertical'}}
+                autoFocus />
+              {error && <div style={{fontSize:11,color:'var(--red)',marginBottom:8}}>{error}</div>}
+              <div style={{display:'flex',justifyContent:'flex-end',gap:8}}>
+                <button onClick={onClose}>Cancel</button>
+                <button onClick={onFetch} disabled={!seed.trim()}
+                  style={{backgroundColor:'var(--navy)',color:'white',
+                    border:'none',padding:'6px 16px',borderRadius:6,
+                    opacity:seed.trim()?1:0.5,cursor:seed.trim()?'pointer':'default'}}>
+                  Search ↗
+                </button>
+              </div>
+            </div>
+          )}
+
+          {step === 2 && (
+            <div style={{textAlign:'center',padding:'32px 0',
+              color:'var(--text-muted)',fontSize:13}}>
+              <div style={{fontSize:22,marginBottom:12}}>⋯</div>
+              Searching and pre-filling bill data…
+            </div>
+          )}
+
+          {step === 3 && draft && (
+            <div>
+              <p style={{fontSize:12,color:'var(--text-muted)',marginBottom:14,lineHeight:1.6}}>
+                Review the pre-filled fields below. Edit anything that looks wrong before adding.
+              </p>
+              {[['Bill name','title','text'],['Date','introduced','text'],
+                ['Bill ID','id','text'],['Sponsors','sponsor','text']].map(([label,key,type]) => (
+                <div key={key} style={{marginBottom:10}}>
+                  <label style={{display:'block',fontSize:10,fontWeight:500,
+                    color:'var(--text-muted)',textTransform:'uppercase',
+                    letterSpacing:'0.06em',marginBottom:3}}>{label}</label>
+                  <input type={type} value={draft[key]||''}
+                    onChange={e => onDraftChange(key,e.target.value)}
+                    style={{width:'100%'}} />
+                </div>
+              ))}
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr',gap:10,marginBottom:10}}>
+                <div>
+                  <label style={{display:'block',fontSize:10,fontWeight:500,color:'var(--text-muted)',
+                    textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:3}}>Domain</label>
+                  <select value={draft.domain} onChange={e => onDraftChange('domain',e.target.value)}
+                    style={{width:'100%'}}>
+                    {Object.entries(DOMAIN).map(([k,v]) =>
+                      <option key={k} value={k}>{v.label}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={{display:'block',fontSize:10,fontWeight:500,color:'var(--text-muted)',
+                    textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:3}}>Category</label>
+                  <select value={draft.category} onChange={e => onDraftChange('category',e.target.value)}
+                    style={{width:'100%'}}>
+                    {Object.keys(CAT).map(k => <option key={k} value={k}>{k}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={{display:'block',fontSize:10,fontWeight:500,color:'var(--text-muted)',
+                    textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:3}}>Party</label>
+                  <select value={draft.party} onChange={e => onDraftChange('party',e.target.value)}
+                    style={{width:'100%'}}>
+                    <option value="D">Democrat</option>
+                    <option value="R">Republican</option>
+                    <option value="Bipartisan">Bipartisan</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{display:'block',fontSize:10,fontWeight:500,color:'var(--text-muted)',
+                    textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:3}}>Chamber</label>
+                  <select value={draft.chamber} onChange={e => onDraftChange('chamber',e.target.value)}
+                    style={{width:'100%'}}>
+                    <option value="Senate">Senate</option>
+                    <option value="House">House</option>
+                  </select>
+                </div>
+              </div>
+              {[['What it bans / does (summary)','summary',2],
+                ['Teeth / enforcement detail','teeth',2],
+                ['Full bill text (detail)','detail',3],
+                ['Notes','notes',2]].map(([label,key,rows]) => (
+                <div key={key} style={{marginBottom:10}}>
+                  <label style={{display:'block',fontSize:10,fontWeight:500,
+                    color:'var(--text-muted)',textTransform:'uppercase',
+                    letterSpacing:'0.06em',marginBottom:3}}>{label}</label>
+                  <textarea value={draft[key]||''} rows={rows}
+                    onChange={e => onDraftChange(key,e.target.value)}
+                    style={{width:'100%',resize:'vertical'}} />
+                </div>
+              ))}
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',
+                marginTop:14,paddingTop:12,borderTop:'1px solid var(--border)'}}>
+                <button onClick={onClose} style={{color:'var(--text-muted)'}}>Cancel</button>
+                <button onClick={onConfirm}
+                  style={{backgroundColor:'var(--green)',color:'white',
+                    border:'none',padding:'7px 20px',borderRadius:6,
+                    fontWeight:500,cursor:'pointer'}}>
+                  Add to tracker ✓
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ── AddEntryModal component ──────────────────── */
+const AddEntryModal = ({
+  step, seed, onSeedChange, onFetch, draft, onDraftChange,
+  onConfirm, onClose, error
+}) => {
+  React.useEffect(() => {
+    const handler = e => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [onClose]);
+
+  return (
+    <div onClick={onClose} style={{
+      position:'fixed',inset:0,backgroundColor:'rgba(0,0,0,0.5)',
+      display:'flex',alignItems:'center',justifyContent:'center',
+      zIndex:1000}}>
+      <div onClick={e => e.stopPropagation()} style={{
+        backgroundColor:'var(--bg)',borderRadius:8,
+        border:'1px solid var(--border)',width:560,maxWidth:'90vw',
+        maxHeight:'85vh',overflowY:'auto',
+        boxShadow:'0 20px 60px rgba(0,0,0,0.3)'}}>
+
+        <div style={{padding:'14px 16px',borderBottom:'1px solid var(--border)',
+          display:'flex',justifyContent:'space-between',alignItems:'center',
+          backgroundColor:'var(--bg-secondary)'}}>
+          <div>
+            <span style={{fontWeight:500,fontSize:14}}>Add regulatory entry</span>
+            <span style={{fontSize:11,color:'var(--text-muted)',marginLeft:8}}>
+              {step === 1 ? 'Paste a press release or agency URL'
+               : step === 2 ? 'Fetching\u2026'
+               : 'Review and confirm'}
+            </span>
+          </div>
+          <button onClick={onClose}
+            style={{background:'none',border:'none',fontSize:18,
+              cursor:'pointer',color:'var(--text-muted)',lineHeight:1}}>\u00d7</button>
+        </div>
+
+        <div style={{padding:16}}>
+          {step === 1 && (
+            <div>
+              <p style={{fontSize:12,color:'var(--text-muted)',marginBottom:12,lineHeight:1.6}}>
+                Paste an official press release URL \u2014 Treasury, CFTC, Fed, SEC, OCC, FDIC, DOJ, or FinCEN.
+                The AI will fetch the page and pre-fill all fields.
+              </p>
+              <input type="url" value={seed} onChange={e => onSeedChange(e.target.value)}
+                placeholder='https://home.treasury.gov/news/press-releases/\u2026'
+                style={{width:'100%',marginBottom:10}}
+                autoFocus
+                onKeyDown={e => { if (e.key === 'Enter' && seed.trim()) onFetch(); }} />
+              {error && <div style={{fontSize:11,color:'var(--red)',marginBottom:8}}>{error}</div>}
+              <div style={{display:'flex',justifyContent:'flex-end',gap:8}}>
+                <button onClick={onClose}>Cancel</button>
+                <button onClick={onFetch} disabled={!seed.trim()}
+                  style={{backgroundColor:'var(--navy)',color:'white',
+                    border:'none',padding:'6px 16px',borderRadius:6,
+                    opacity:seed.trim()?1:0.5,cursor:seed.trim()?'pointer':'default'}}>
+                  Fetch \u2197
+                </button>
+              </div>
+            </div>
+          )}
+
+          {step === 2 && (
+            <div style={{textAlign:'center',padding:'32px 0',
+              color:'var(--text-muted)',fontSize:13}}>
+              <div style={{fontSize:22,marginBottom:12}}>\u22ef</div>
+              Fetching and extracting entry data\u2026
+            </div>
+          )}
+
+          {step === 3 && draft && (
+            <div>
+              <p style={{fontSize:12,color:'var(--text-muted)',marginBottom:14,lineHeight:1.6}}>
+                Review pre-filled fields. Edit anything before adding.
+              </p>
+              <div style={{marginBottom:10}}>
+                <label style={{display:'block',fontSize:10,fontWeight:500,
+                  color:'var(--text-muted)',textTransform:'uppercase',
+                  letterSpacing:'0.06em',marginBottom:3}}>Title</label>
+                <input type="text" value={draft.title||''}
+                  onChange={e => onDraftChange('title',e.target.value)}
+                  style={{width:'100%'}} />
+              </div>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr',gap:10,marginBottom:10}}>
+                <div>
+                  <label style={{display:'block',fontSize:10,fontWeight:500,color:'var(--text-muted)',
+                    textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:3}}>Date</label>
+                  <input type="text" value={draft.date||''}
+                    onChange={e => onDraftChange('date',e.target.value)}
+                    style={{width:'100%'}} />
+                </div>
+                <div>
+                  <label style={{display:'block',fontSize:10,fontWeight:500,color:'var(--text-muted)',
+                    textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:3}}>Agency</label>
+                  <select value={draft.agency||'Treasury'}
+                    onChange={e => onDraftChange('agency',e.target.value)}
+                    style={{width:'100%'}}>
+                    {Object.keys(AGENCY_META).map(k =>
+                      <option key={k} value={k}>{k}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={{display:'block',fontSize:10,fontWeight:500,color:'var(--text-muted)',
+                    textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:3}}>Action</label>
+                  <select value={draft.action||'Guidance'}
+                    onChange={e => onDraftChange('action',e.target.value)}
+                    style={{width:'100%'}}>
+                    {Object.keys(ACTION_META).map(k =>
+                      <option key={k} value={k}>{k}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={{display:'block',fontSize:10,fontWeight:500,color:'var(--text-muted)',
+                    textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:3}}>Domain</label>
+                  <select value={draft.domain||'prediction-markets'}
+                    onChange={e => onDraftChange('domain',e.target.value)}
+                    style={{width:'100%'}}>
+                    {Object.entries(DOMAIN).map(([k,v]) =>
+                      <option key={k} value={k}>{v.label}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div style={{marginBottom:10}}>
+                <label style={{display:'block',fontSize:10,fontWeight:500,
+                  color:'var(--text-muted)',textTransform:'uppercase',
+                  letterSpacing:'0.06em',marginBottom:3}}>Detail</label>
+                <textarea value={draft.detail||''} rows={4}
+                  onChange={e => onDraftChange('detail',e.target.value)}
+                  style={{width:'100%',resize:'vertical'}} />
+              </div>
+              <div style={{marginBottom:10}}>
+                <label style={{display:'block',fontSize:10,fontWeight:500,
+                  color:'var(--text-muted)',textTransform:'uppercase',
+                  letterSpacing:'0.06em',marginBottom:3}}>Source URL</label>
+                <input type="url" value={draft.url||''}
+                  onChange={e => onDraftChange('url',e.target.value)}
+                  style={{width:'100%'}} />
+              </div>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',
+                marginTop:14,paddingTop:12,borderTop:'1px solid var(--border)'}}>
+                <button onClick={onClose} style={{color:'var(--text-muted)'}}>Cancel</button>
+                <button onClick={onConfirm}
+                  style={{backgroundColor:'var(--green)',color:'white',
+                    border:'none',padding:'7px 20px',borderRadius:6,
+                    fontWeight:500,cursor:'pointer'}}>
+                  Add to tracker \u2713
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ── persistence ───────────────────────────────── */
+const STORAGE_KEY = 'reg-track-v1';
+
+/* ── app ───────────────────────────────────────── */
+const App = () => {
+  const [activeTab, setActiveTab] = React.useState('bills');
+  const [editMode, setEditMode] = React.useState(false);
+  const [ts, setTs] = React.useState('March 31, 2026');
+  const [bills, setBills] = React.useState(SEED_BILLS);
+  const [timeline, setTimeline] = React.useState(SEED_TIMELINE);
+  const [expandedBill, setExpandedBill] = React.useState(null);
+  const [expandedTl, setExpandedTl] = React.useState(null);
+  const [billFilter, setBillFilter] = React.useState({ domain:'all', cat:'all', party:'all', q:'' });
+  const [tlFilter, setTlFilter] = React.useState({ agency:'all', action:'all', domain:'all', q:'' });
+  const [refreshing, setRefreshing] = React.useState(false);
+  const [log, setLog] = React.useState('');
+  const [showAddModal, setShowAddModal] = React.useState(false);
+  const [addStep, setAddStep] = React.useState(1);
+  const [addSeed, setAddSeed] = React.useState('');
+  const [addDraft, setAddDraft] = React.useState(null);
+  const [addError, setAddError] = React.useState('');
+  const [billSort, setBillSort] = React.useState({ key:'introduced', dir:'desc' });
+  const [tlSort, setTlSort] = React.useState({ key:'date', dir:'desc' });
+  const [theme, setTheme] = React.useState(() => localStorage.getItem('reg-track-theme') || 'auto');
+  const cycleTheme = () => setTheme(prev => {
+    const next = prev === 'auto' ? 'light' : prev === 'light' ? 'dark' : 'auto';
+    localStorage.setItem('reg-track-theme', next);
+    return next;
+  });
+  React.useEffect(() => {
+    const el = document.documentElement;
+    el.classList.remove('light', 'dark');
+    if (theme !== 'auto') el.classList.add(theme);
+  }, [theme]);
+  const themeIcon = theme === 'auto' ? '\u25d1' : theme === 'light' ? '\u2600' : '\u263e';
+  const [showAbout, setShowAbout] = React.useState(false);
+  const [showAddEntryModal, setShowAddEntryModal] = React.useState(false);
+  const [addEntryStep, setAddEntryStep] = React.useState(1);
+  const [addEntrySeed, setAddEntrySeed] = React.useState('');
+  const [addEntryDraft, setAddEntryDraft] = React.useState(null);
+  const [addEntryError, setAddEntryError] = React.useState('');
+
+  /* persistence helpers */
+  const saveToStorage = React.useCallback((b, t) => {
+    try {
+      const ts2 = new Date().toLocaleString('en-US', {
+        month: 'long', day: 'numeric', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        bills: b, timeline: t, ts: ts2
+      }));
+      setTs(ts2);
+    } catch (e) { console.warn('Storage write failed:', e); }
+  }, []);
+
+  React.useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const { bills: b, timeline: t, ts: savedTs } = JSON.parse(raw);
+        if (b?.length) setBills(b);
+        if (t?.length) setTimeline(t);
+        if (savedTs) setTs(savedTs);
+      }
+    } catch (e) { console.warn('Storage read failed:', e); }
+  }, []);
+
+  const updateBill = (id, field, value) => {
+    setBills(prev => {
+      const next = prev.map(b => b.id === id ? { ...b, [field]: value } : b);
+      saveToStorage(next, timeline);
+      return next;
+    });
+  };
+
+  const updateTl = (id, field, value) => {
+    setTimeline(prev => {
+      const next = prev.map(e => e.id === id ? { ...e, [field]: value } : e);
+      saveToStorage(bills, next);
+      return next;
+    });
+  };
+
+  /* Anthropic API refresh */
+  const doRefresh = async () => {
+    setRefreshing(true);
+    setLog(`Searching for latest ${activeTab === 'bills'
+      ? 'bill' : 'regulatory'} updates...`);
+
+    const prompt = activeTab === 'bills'
+      ? `Search for the very latest news today on US Congressional prediction market legislation. Currently tracking: ${bills.map(b => `[${b.id}] "${b.title}"`).join(', ')}. Find: (1) any new bills introduced, (2) status changes on existing bills (e.g. advanced to committee). Respond ONLY with compact valid JSON — no markdown, no backticks, no preamble: {"updates":[{"id":"S.1234","status":"Committee","notes":"Advanced to Senate Ag Committee"}],"newBills":[{"introduced":"2026-04-01","title":"...","id":"S.9999","chamber":"Senate","party":"R","sponsor":"...","category":"Prediction Markets","summary":"one clear sentence","teeth":"key enforcement detail","detail":"full text","status":"Introduced"}],"summary":"2-3 sentences on what changed today."}`
+      : `Search for the very latest financial regulatory actions today from CFTC, Fed, DOJ, SEC, Treasury, OCC, FDIC, or FinCEN. Currently tracking: ${timeline.map(e => `[${e.id}] "${e.title}"`).join(', ')}. Find: any new agency actions, enforcement cases, research papers, litigation, or speeches since the last entry. Respond ONLY with compact valid JSON — no markdown, no backticks: {"newEntries":[{"date":"2026-04-01","agency":"CFTC","action":"Guidance","domain":"prediction-markets or crypto or monetary-policy or fintech or financial-stability","title":"...","detail":"2-3 sentences","url":"canonical source URL or empty string"}],"summary":"2-3 sentences on what is new."}`;
+
+    try {
+      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 2000,
+          tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+      const data = await resp.json();
+      const text = (data.content || [])
+        .filter(b => b.type === 'text').map(b => b.text).join('');
+      const m = text.match(/\{[\s\S]*\}/);
+      if (m) {
+        const result = JSON.parse(m[0]);
+        if (activeTab === 'bills') {
+          setBills(prev => {
+            let next = [...prev];
+            if (result.updates?.length) {
+              next = next.map(b => {
+                const u = result.updates.find(u => u.id === b.id);
+                return u ? {
+                  ...b,
+                  status: u.status || b.status,
+                  notes: u.notes
+                    ? (b.notes ? b.notes + ' | ' + u.notes : u.notes)
+                    : b.notes
+                } : b;
+              });
+            }
+            if (result.newBills?.length) {
+              const fresh = result.newBills.map((nb, i) => ({
+                ...nb,
+                id: nb.id || `NEW-${Date.now()}-${i}`,
+                isNew: true
+              }));
+              next = [...fresh, ...next];
+            }
+            saveToStorage(next, timeline);
+            return next;
+          });
+        } else {
+          if (result.newEntries?.length) {
+            setTimeline(prev => {
+              const maxId = Math.max(
+                ...prev.map(e => parseInt(e.id.replace('tl-','')) || 0));
+              const fresh = result.newEntries.map((ne, i) => ({
+                ...ne,
+                id: `tl-${maxId + i + 1}`,
+                isNew: true,
+                notes: ''
+              }));
+              const next = [...fresh, ...prev];
+              saveToStorage(bills, next);
+              return next;
+            });
+          }
+        }
+        setLog(result.summary || 'Search complete.');
+      } else {
+        setLog('Search complete — no structured changes found.');
+      }
+    } catch (err) {
+      setLog(`Refresh error: ${err.message}`);
+    }
+    setRefreshing(false);
+  };
+
+  /* Add Bill — AI fetch + confirm */
+  const doFetchBill = async () => {
+    if (!addSeed.trim()) return;
+    setAddStep(2);
+    setAddError('');
+    try {
+      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1500,
+          tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+          messages: [{ role: 'user',
+            content: `Search for this bill or regulatory action and return structured data: "${addSeed}"\n\nReturn ONLY compact valid JSON — no markdown, no backticks:\n{"introduced":"2026-MM-DD","title":"Official short title","id":"S.XXXX or H.R.XXXX","chamber":"Senate or House","party":"R or D or Bipartisan","sponsor":"Lastname (D-ST)","domain":"prediction-markets or crypto or monetary-policy or fintech or financial-stability","category":"Prediction Markets or Digital Assets or Stablecoins or Market Structure or Banking or AML/KYC or Fintech","summary":"One clear sentence.","teeth":"Key enforcement mechanism.","detail":"Full text, 2-4 sentences.","status":"Introduced","notes":"Notable context or empty string."}`
+          }]
+        })
+      });
+      const data = await resp.json();
+      const text = (data.content || [])
+        .filter(b => b.type === 'text').map(b => b.text).join('');
+      const m = text.match(/\{[\s\S]*\}/);
+      if (m) {
+        const raw = JSON.parse(m[0]);
+        setAddDraft({
+          introduced: raw.introduced || raw.date || '',
+          title: raw.title || raw.name || '',
+          id: raw.id || '',
+          chamber: raw.chamber || 'Senate',
+          party: raw.party || 'D',
+          sponsor: raw.sponsor || raw.sponsors || '',
+          domain: raw.domain || 'prediction-markets',
+          category: raw.category || raw.cat || 'Prediction Markets',
+          summary: raw.summary || '',
+          teeth: raw.teeth || '',
+          detail: raw.detail || '',
+          status: raw.status || 'Introduced',
+          notes: raw.notes || '',
+          isNew: true,
+        });
+        setAddStep(3);
+      } else {
+        setAddError('Could not parse bill data. Try a more specific input.');
+        setAddStep(1);
+      }
+    } catch (err) {
+      setAddError(`Fetch error: ${err.message}`);
+      setAddStep(1);
+    }
+  };
+
+  const doConfirmBill = () => {
+    if (!addDraft) return;
+    setBills(prev => {
+      const next = [addDraft, ...prev];
+      saveToStorage(next, timeline);
+      return next;
+    });
+    setShowAddModal(false);
+    setAddStep(1);
+    setAddSeed('');
+    setAddDraft(null);
+    setAddError('');
+  };
+
+  const closeAddModal = () => {
+    setShowAddModal(false);
+    setAddStep(1);
+    setAddSeed('');
+    setAddDraft(null);
+    setAddError('');
+  };
+
+  /* Add Entry — URL fetch + confirm */
+  const doFetchEntry = async () => {
+    if (!addEntrySeed.trim()) return;
+    setAddEntryStep(2);
+    setAddEntryError('');
+    try {
+      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1500,
+          tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+          messages: [{ role: 'user',
+            content: `Fetch this URL and extract regulatory action data: "${addEntrySeed}"\n\nReturn ONLY compact valid JSON \u2014 no markdown, no backticks:\n{"date":"2026-MM-DD","agency":"Treasury","action":"Proposed Rule","domain":"crypto","title":"Short descriptive title (10 words max)","detail":"2-3 sentence summary of what this action does, who it affects, and key requirements or deadlines.","url":"${addEntrySeed}"}\n\nagency must be one of: CFTC, SEC, Fed, OCC, FDIC, DOJ, Treasury, FinCEN\naction must be one of: Final Rule, Proposed Rule, Guidance, Enforcement, Staff Letter, Research, Inquiry, No-Action Letter\ndomain must be one of: prediction-markets, crypto, monetary-policy, fintech, financial-stability\ndate must be YYYY-MM-DD format.`
+          }]
+        })
+      });
+      const data = await resp.json();
+      const text = (data.content || [])
+        .filter(b => b.type === 'text').map(b => b.text).join('');
+      const m = text.match(/\{[\s\S]*\}/);
+      if (m) {
+        const raw = JSON.parse(m[0]);
+        setAddEntryDraft({
+          date:   raw.date   || '',
+          agency: raw.agency || 'Treasury',
+          action: raw.action || 'Guidance',
+          domain: raw.domain || 'prediction-markets',
+          title:  raw.title  || '',
+          detail: raw.detail || '',
+          url:    raw.url    || addEntrySeed,
+          isNew:  true,
+        });
+        setAddEntryStep(3);
+      } else {
+        setAddEntryError('Could not parse entry data. Check the URL and try again.');
+        setAddEntryStep(1);
+      }
+    } catch (err) {
+      setAddEntryError(`Fetch error: ${err.message}`);
+      setAddEntryStep(1);
+    }
+  };
+
+  const doConfirmEntry = () => {
+    if (!addEntryDraft) return;
+    setTimeline(prev => {
+      const maxId = Math.max(...prev.map(e => parseInt(e.id.replace('tl-','')) || 0));
+      const next = [{ ...addEntryDraft, id: `tl-${maxId + 1}` }, ...prev];
+      saveToStorage(bills, next);
+      return next;
+    });
+    setShowAddEntryModal(false);
+    setAddEntryStep(1);
+    setAddEntrySeed('');
+    setAddEntryDraft(null);
+    setAddEntryError('');
+  };
+
+  const closeAddEntryModal = () => {
+    setShowAddEntryModal(false);
+    setAddEntryStep(1);
+    setAddEntrySeed('');
+    setAddEntryDraft(null);
+    setAddEntryError('');
+  };
+
+  const filteredTl = timeline.filter(e => {
+    if (tlFilter.agency !== 'all' && e.agency !== tlFilter.agency) return false;
+    if (tlFilter.action !== 'all' && e.action !== tlFilter.action) return false;
+    if (tlFilter.domain !== 'all' && e.domain !== tlFilter.domain) return false;
+    if (tlFilter.q) {
+      const q = tlFilter.q.toLowerCase();
+      if (!`${e.title} ${e.detail} ${e.notes || ''}`
+        .toLowerCase().includes(q)) return false;
+    }
+    return true;
+  });
+
+  const filteredBills = bills.filter(b => {
+    if (billFilter.domain !== 'all' && b.domain !== billFilter.domain) return false;
+    if (billFilter.cat !== 'all' && b.category !== billFilter.cat) return false;
+    if (billFilter.party !== 'all' && b.party !== billFilter.party) return false;
+    if (billFilter.q) {
+      const q = billFilter.q.toLowerCase();
+      if (!`${b.title} ${b.sponsor} ${b.summary} ${b.detail} ${b.teeth}`
+        .toLowerCase().includes(q)) return false;
+    }
+    return true;
+  });
+
+  const toggleSort = (setter, key) => setter(prev =>
+    prev.key === key ? { key, dir: prev.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: 'asc' }
+  );
+  const cmp = (a, b, key, dir) => {
+    const va = (a[key] || '').toString().toLowerCase();
+    const vb = (b[key] || '').toString().toLowerCase();
+    return dir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+  };
+  const sortedBills = [...filteredBills].sort((a, b) => cmp(a, b, billSort.key, billSort.dir));
+  const sortedTl = [...filteredTl].sort((a, b) => cmp(a, b, tlSort.key, tlSort.dir));
+
+  const statsData = activeTab === 'bills'
+    ? Object.entries(DOMAIN).map(([k, v]) => ({
+        label: v.label.split(' ')[0], val: bills.filter(b => b.domain === k).length, color: v.a
+      }))
+    : Object.entries(DOMAIN).map(([k, v]) => ({
+        label: v.label.split(' ')[0], val: timeline.filter(e => e.domain === k).length, color: v.a
+      }));
+
+  return (
+    <div style={{minHeight:'100vh'}}>
+      {/* NAV */}
+      <div style={{backgroundColor:'var(--navy)',padding:'11px 16px',
+        display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+        <div style={{display:'flex',alignItems:'center',gap:8}}>
+          <span style={{fontSize:11,color:'#93c5fd',letterSpacing:'0.05em',fontWeight:500}}>
+            SPIA · VT
+          </span>
+          <span style={{color:'#374151'}}>|</span>
+          <span style={{fontSize:14,fontWeight:500,color:'white'}}>
+            Financial Regulation Tracker
+          </span>
+          <span style={{fontSize:10,padding:'2px 8px',borderRadius:20,
+            backgroundColor:'#1d3a56',color:'#93c5fd',marginLeft:4}}>v1.0</span>
+        </div>
+        <div style={{display:'flex',alignItems:'center',gap:10}}>
+          <span style={{fontSize:10,color:'#6b7280'}}>Updated: {ts}</span>
+          <button onClick={cycleTheme} title={`Theme: ${theme}`}
+            style={{fontSize:13,padding:'3px 10px',borderRadius:20,
+              backgroundColor:'transparent',
+              border:'1px solid #374151',
+              color:'#9ca3af',lineHeight:1}}>
+            {themeIcon}
+          </button>
+          <button onClick={() => setShowAbout(s => !s)}
+            style={{fontSize:11,padding:'3px 10px',borderRadius:20,
+              backgroundColor: showAbout ? '#1d3a56' : 'transparent',
+              border: `1px solid ${showAbout ? '#3b82f6' : '#374151'}`,
+              color: showAbout ? '#93c5fd' : '#9ca3af'}}>
+            {showAbout ? 'About \u25b4' : 'About \u25be'}
+          </button>
+          <button onClick={() => setEditMode(e => !e)}
+            style={{fontSize:11,padding:'3px 10px',borderRadius:20,
+              backgroundColor: editMode ? '#dcfce7' : 'transparent',
+              border: `1px solid ${editMode ? '#16a34a' : '#374151'}`,
+              color: editMode ? '#14532d' : '#9ca3af'}}>
+            {editMode ? 'editing on' : 'edit mode'}
+          </button>
+        </div>
+      </div>
+
+      {/* ABOUT STRIP */}
+      <div style={{borderBottom:'1px solid var(--border)'}}>
+        <div style={{backgroundColor:'var(--bg-secondary)',padding:'5px 16px',
+          display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
+          <span style={{fontSize:11,color:'var(--text-muted)',flexShrink:0}}>
+            US financial regulation &mdash;
+          </span>
+          <div style={{display:'flex',gap:4,flexWrap:'wrap'}}>
+            {Object.entries(DOMAIN).map(([k,v]) =>
+              <Pill key={k} label={v.label} a={v.a} bg={v.bg} t={v.t} sm />
+            )}
+          </div>
+        </div>
+        {showAbout && (
+          <div style={{backgroundColor:'var(--bg)',padding:'16px 18px',
+            borderTop:'1px solid var(--border)',
+            display:'grid',gridTemplateColumns:'2fr 1fr',gap:28}}>
+
+            {/* Left — scope */}
+            <div>
+              <div style={{fontSize:10,fontWeight:600,color:'var(--text-muted)',
+                textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:6}}>
+                About this tool
+              </div>
+              <p style={{fontSize:12,color:'var(--text)',lineHeight:1.65,marginBottom:14}}>
+                Tracks US Congressional legislation and federal agency regulatory actions
+                at the intersection of financial markets, digital assets, and market structure.
+                The Bills tab follows the full legislative lifecycle from introduction through
+                enactment. The Regulatory Timeline records agency rulemakings, guidance,
+                enforcement actions, and research across CFTC, Fed, SEC, OCC, FDIC, DOJ,
+                Treasury, and FinCEN. Entries are updated via AI-assisted web search and
+                are human-reviewable in edit mode.
+              </p>
+              <div style={{fontSize:10,fontWeight:600,color:'var(--text-muted)',
+                textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:7}}>
+                Coverage
+              </div>
+              <div style={{display:'flex',gap:5,flexWrap:'wrap'}}>
+                {Object.entries(DOMAIN).map(([k,v]) =>
+                  <Pill key={k} label={v.label} a={v.a} bg={v.bg} t={v.t} />
+                )}
+              </div>
+            </div>
+
+            {/* Right — sources, methodology, attribution */}
+            <div>
+              <div style={{fontSize:10,fontWeight:600,color:'var(--text-muted)',
+                textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:6}}>
+                Data sources
+              </div>
+              <div style={{fontSize:11,color:'var(--text-muted)',lineHeight:1.75,marginBottom:14}}>
+                <span style={{fontWeight:500,color:'var(--text)'}}>Bills</span><br/>
+                congress.gov &middot; GovTrack &middot; official press releases
+                <br/><br/>
+                <span style={{fontWeight:500,color:'var(--text)'}}>Regulatory timeline</span><br/>
+                CFTC &middot; Fed &middot; SEC &middot; OCC &middot; FDIC<br/>
+                DOJ &middot; Treasury &middot; FinCEN
+              </div>
+              <div style={{fontSize:10,fontWeight:600,color:'var(--text-muted)',
+                textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:6}}>
+                Methodology
+              </div>
+              <div style={{fontSize:11,color:'var(--text-muted)',lineHeight:1.65,marginBottom:14}}>
+                AI-assisted field extraction via web search. Agency, action type, and domain
+                classification are editable in edit mode. Source URLs link to canonical
+                agency documents.
+              </div>
+              <div style={{fontSize:10,color:'var(--text-muted)',
+                paddingTop:10,borderTop:'1px solid var(--border)',lineHeight:1.6}}>
+                <span style={{fontWeight:500,color:'var(--text)'}}>
+                  David Bieri
+                </span>
+                {' \u00b7 '}School of Public and International Affairs{' \u00b7 '}Virginia Tech
+                <br/>
+                For research and educational purposes only.
+              </div>
+            </div>
+
+          </div>
+        )}
+      </div>
+
+      {/* STATS BAR */}
+      <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:1,
+        backgroundColor:'var(--border)',marginBottom:0}}>
+        {statsData.map((s, i) =>
+          <div key={i} style={{backgroundColor:'var(--bg-secondary)',
+            padding:'8px 12px',textAlign:'center'}}>
+            <div style={{fontSize:10,color:'var(--mid-gray)',marginBottom:2}}>{s.label}</div>
+            <div style={{fontSize:20,fontWeight:500,
+              color:s.color,lineHeight:1}}>{s.val}</div>
+          </div>
+        )}
+      </div>
+
+      {/* TAB BAR */}
+      <div style={{display:'flex',alignItems:'center',
+        borderBottom:'1px solid var(--border)',
+        backgroundColor:'var(--bg-secondary)',paddingLeft:14}}>
+        {[['bills','Congressional Bills',bills.length],
+          ['timeline','Regulatory Timeline',timeline.length]].map(([id,label,count]) =>
+          <button key={id} onClick={() => setActiveTab(id)}
+            style={{padding:'8px 18px',fontSize:12,fontWeight:500,
+              cursor:'pointer',border:'none',
+              borderBottom: activeTab===id
+                ? '2px solid var(--navy)' : '2px solid transparent',
+              backgroundColor:'transparent',
+              color: activeTab===id ? 'var(--text)' : 'var(--text-muted)'}}>
+            {label}{' '}
+            <span style={{fontSize:10,padding:'1px 6px',borderRadius:20,marginLeft:3,
+              backgroundColor: activeTab===id ? 'var(--navy)' : 'var(--gray-bg)',
+              color: activeTab===id ? 'white' : 'var(--mid-gray)'}}>
+              {count}
+            </span>
+          </button>
+        )}
+      </div>
+
+      {/* BILLS TAB */}
+      {activeTab === 'bills' && (
+        <div>
+          {/* Filter bar */}
+          <div className="no-print" style={{backgroundColor:'var(--bg-secondary)',
+            padding:'9px 14px',display:'flex',alignItems:'center',
+            gap:8,flexWrap:'wrap',borderBottom:'1px solid var(--border)'}}>
+            <input type="text" placeholder="Search bills..."
+              value={billFilter.q}
+              onChange={e => setBillFilter(f => ({...f, q: e.target.value}))}
+              style={{width:170, borderRadius:20}} />
+            <select value={billFilter.domain}
+              onChange={e => setBillFilter(f => ({...f, domain: e.target.value}))}>
+              <option value="all">All domains</option>
+              {Object.entries(DOMAIN).map(([k,v]) =>
+                <option key={k} value={k}>{v.label}</option>)}
+            </select>
+            <select value={billFilter.cat}
+              onChange={e => setBillFilter(f => ({...f, cat: e.target.value}))}>
+              <option value="all">All categories</option>
+              {Object.keys(CAT).map(k =>
+                <option key={k} value={k}>{k}</option>)}
+            </select>
+            <select value={billFilter.party}
+              onChange={e => setBillFilter(f => ({...f, party: e.target.value}))}>
+              <option value="all">All parties</option>
+              <option value="D">Democrat</option>
+              <option value="R">Republican</option>
+              <option value="Bipartisan">Bipartisan only</option>
+            </select>
+            <div style={{marginLeft:'auto',display:'flex',gap:6}}>
+              <button onClick={doRefresh} disabled={refreshing}
+                style={{fontSize:12,padding:'5px 14px',borderRadius:6,
+                  backgroundColor: refreshing ? 'var(--bg-secondary)' : 'var(--navy)',
+                  color: refreshing ? 'var(--mid-gray)' : 'white',
+                  border: `1px solid ${refreshing ? 'var(--border)' : 'var(--navy)'}`,
+                  cursor: refreshing ? 'wait' : 'pointer'}}>
+                {refreshing ? 'Searching...' : 'Refresh ↗'}
+              </button>
+              <button onClick={() => setShowAddModal(true)}
+                style={{fontSize:12,padding:'5px 12px',borderRadius:6,
+                  backgroundColor:'var(--green)',color:'white',border:'none',
+                  cursor:'pointer'}}>
+                + Add bill
+              </button>
+              <button onClick={() => window.print()}>Print</button>
+            </div>
+          </div>
+
+          {log && (
+            <div style={{padding:'7px 14px',
+              backgroundColor:'#eff6ff',borderBottom:'1px solid #bfdbfe',
+              fontSize:12,color:'#1e3a8a',
+              display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+              <span>{log}</span>
+              <button onClick={() => setLog('')}
+                style={{background:'none',border:'none',cursor:'pointer',
+                  fontSize:16,color:'var(--mid-gray)',lineHeight:1}}>×</button>
+            </div>
+          )}
+
+          {/* Bills table */}
+          <div style={{overflowX:'auto'}}>
+            <table style={{tableLayout:'fixed'}}>
+              <colgroup>
+                <col style={{width:56}} />
+                <col />
+                <col style={{width:155}} />
+                <col style={{width:120}} />
+                <col style={{width:90}} />
+                <col style={{width:155}} />
+                <col style={{width:26}} />
+              </colgroup>
+              <thead>
+                <tr style={{backgroundColor:'var(--bg-secondary)',
+                  borderBottom:'2px solid var(--border)'}}>
+                  {[{label:'Date',key:'introduced'},{label:'Bill name'},{label:'Sponsors'},
+                    {label:'Category'},{label:'Party / chamber'},{label:'Status'},{label:''}].map(h =>
+                    <th key={h.label} onClick={h.key ? () => toggleSort(setBillSort, h.key) : undefined}
+                      style={{padding:'8px',textAlign:'left',fontSize:10,
+                      fontWeight:500,color:'var(--mid-gray)',
+                      textTransform:'uppercase',letterSpacing:'0.06em',
+                      paddingLeft: h.label==='Date' ? 12 : 8,
+                      cursor: h.key ? 'pointer' : 'default',
+                      userSelect: h.key ? 'none' : 'auto'}}>
+                      {h.label}{h.key && billSort.key === h.key ? (billSort.dir === 'asc' ? ' \u25b2' : ' \u25bc') : ''}
+                    </th>
+                  )}
+                </tr>
+              </thead>
+              <tbody>
+                {sortedBills.map(b =>
+                  <BillRows key={b.id} bill={b}
+                    expanded={expandedBill === b.id}
+                    onToggle={id => setExpandedBill(p => p===id ? null : id)}
+                    editMode={editMode}
+                    onUpdate={updateBill} />
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* TIMELINE TAB */}
+      {activeTab === 'timeline' && (
+        <div>
+          {/* Filter bar */}
+          <div className="no-print" style={{backgroundColor:'var(--bg-secondary)',
+            padding:'9px 14px',display:'flex',alignItems:'center',
+            gap:8,flexWrap:'wrap',borderBottom:'1px solid var(--border)'}}>
+            <input type="text" placeholder="Search timeline..."
+              value={tlFilter.q}
+              onChange={e => setTlFilter(f => ({...f, q: e.target.value}))}
+              style={{width:170, borderRadius:20}} />
+            <select value={tlFilter.agency}
+              onChange={e => setTlFilter(f => ({...f, agency: e.target.value}))}>
+              <option value="all">All agencies</option>
+              {Object.keys(AGENCY_META).map(k =>
+                <option key={k} value={k}>{k}</option>)}
+            </select>
+            <select value={tlFilter.action}
+              onChange={e => setTlFilter(f => ({...f, action: e.target.value}))}>
+              <option value="all">All action types</option>
+              {Object.keys(ACTION_META).map(k =>
+                <option key={k} value={k}>{k}</option>)}
+            </select>
+            <select value={tlFilter.domain}
+              onChange={e => setTlFilter(f => ({...f, domain: e.target.value}))}>
+              <option value="all">All domains</option>
+              {Object.entries(DOMAIN).map(([k,v]) =>
+                <option key={k} value={k}>{v.label}</option>)}
+            </select>
+            <div style={{marginLeft:'auto',display:'flex',gap:6}}>
+              <button onClick={doRefresh} disabled={refreshing}
+                style={{fontSize:12,padding:'5px 14px',borderRadius:6,
+                  backgroundColor: refreshing ? 'var(--bg-secondary)' : 'var(--navy)',
+                  color: refreshing ? 'var(--mid-gray)' : 'white',
+                  border: `1px solid ${refreshing ? 'var(--border)' : 'var(--navy)'}`,
+                  cursor: refreshing ? 'wait' : 'pointer'}}>
+                {refreshing ? 'Searching...' : 'Refresh ↗'}
+              </button>
+              <button onClick={() => setShowAddEntryModal(true)}
+                style={{fontSize:12,padding:'5px 12px',borderRadius:6,
+                  backgroundColor:'var(--teal)',color:'white',border:'none',
+                  cursor:'pointer'}}>
+                + Add entry
+              </button>
+              <button onClick={() => window.print()}>Print</button>
+            </div>
+          </div>
+
+          {log && (
+            <div style={{padding:'7px 14px',
+              backgroundColor:'#eff6ff',borderBottom:'1px solid #bfdbfe',
+              fontSize:12,color:'#1e3a8a',
+              display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+              <span>{log}</span>
+              <button onClick={() => setLog('')}
+                style={{background:'none',border:'none',cursor:'pointer',
+                  fontSize:16,color:'var(--mid-gray)',lineHeight:1}}>×</button>
+            </div>
+          )}
+
+          {/* Timeline table */}
+          <div style={{overflowX:'auto'}}>
+            <table style={{tableLayout:'fixed'}}>
+              <colgroup>
+                <col style={{width:80}} />
+                <col style={{width:90}} />
+                <col style={{width:105}} />
+                <col />
+                <col style={{width:26}} />
+              </colgroup>
+              <thead>
+                <tr style={{backgroundColor:'var(--bg-secondary)',
+                  borderBottom:'2px solid var(--border)'}}>
+                  {[{label:'Date',key:'date'},{label:'Agency',key:'agency'},
+                    {label:'Action type',key:'action'},{label:'Title + summary'},{label:''}].map(h =>
+                    <th key={h.label} onClick={h.key ? () => toggleSort(setTlSort, h.key) : undefined}
+                      style={{padding:'8px',textAlign:'left',fontSize:10,
+                      fontWeight:500,color:'var(--mid-gray)',
+                      textTransform:'uppercase',letterSpacing:'0.06em',
+                      paddingLeft: h.label==='Date' ? 12 : 8,
+                      cursor: h.key ? 'pointer' : 'default',
+                      userSelect: h.key ? 'none' : 'auto'}}>
+                      {h.label}{h.key && tlSort.key === h.key ? (tlSort.dir === 'asc' ? ' \u25b2' : ' \u25bc') : ''}
+                    </th>
+                  )}
+                </tr>
+              </thead>
+              <tbody>
+                {sortedTl.map(e =>
+                  <TimelineRow key={e.id} entry={e}
+                    expanded={expandedTl === e.id}
+                    onToggle={id => setExpandedTl(p => p===id ? null : id)}
+                    editMode={editMode}
+                    onUpdate={updateTl} />
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* FOOTER */}
+      <div style={{padding:'10px 14px',borderTop:'1px solid var(--border)',
+        display:'flex',justifyContent:'space-between',flexWrap:'wrap',gap:4,
+        marginTop:'auto'}}>
+        <span style={{fontSize:11,color:'var(--mid-gray)'}}>
+          David Bieri · SPIA · Virginia Tech
+        </span>
+        <span style={{fontSize:11,color:'var(--mid-gray)'}}>
+          {activeTab === 'bills'
+            ? `${filteredBills.length} of ${bills.length} bills shown`
+            : `${filteredTl.length} of ${timeline.length} entries shown`}
+        </span>
+      </div>
+
+      {/* ADD BILL MODAL */}
+      {showAddModal && (
+        <AddBillModal
+          step={addStep}
+          seed={addSeed}
+          onSeedChange={setAddSeed}
+          onFetch={doFetchBill}
+          draft={addDraft}
+          onDraftChange={(key, val) => setAddDraft(d => ({...d, [key]: val}))}
+          onConfirm={doConfirmBill}
+          onClose={closeAddModal}
+          error={addError}
+        />
+      )}
+
+      {/* ADD ENTRY MODAL */}
+      {showAddEntryModal && (
+        <AddEntryModal
+          step={addEntryStep}
+          seed={addEntrySeed}
+          onSeedChange={setAddEntrySeed}
+          onFetch={doFetchEntry}
+          draft={addEntryDraft}
+          onDraftChange={(key, val) => setAddEntryDraft(d => ({...d, [key]: val}))}
+          onConfirm={doConfirmEntry}
+          onClose={closeAddEntryModal}
+          error={addEntryError}
+        />
+      )}
+    </div>
+  );
+};
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
