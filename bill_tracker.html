@@ -55,6 +55,36 @@
     --amber-bg: #451a03;
   }
 }
+html.dark {
+  --text: #f0f0f0;
+  --text-muted: #aaa;
+  --bg: #111827;
+  --bg-secondary: #1f2937;
+  --border: #374151;
+  --gray-bg: #1f2937;
+  --light-blue: #1e3a5f;
+  --red-bg: #450a0a;
+  --green-bg: #052e16;
+  --purple-bg: #2e1065;
+  --orange-bg: #431407;
+  --teal-bg: #083344;
+  --amber-bg: #451a03;
+}
+html.light {
+  --text: #1a1a1a;
+  --text-muted: #555;
+  --bg: #ffffff;
+  --bg-secondary: #f8f8f8;
+  --border: #e5e7eb;
+  --gray-bg: #f4f4f5;
+  --light-blue: #dbeafe;
+  --red-bg: #fee2e2;
+  --green-bg: #dcfce7;
+  --purple-bg: #f5f3ff;
+  --orange-bg: #fef3c7;
+  --teal-bg: #ecfeff;
+  --amber-bg: #fffbeb;
+}
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
        font-size: 14px; background: var(--bg); color: var(--text); }
@@ -840,6 +870,18 @@ const App = () => {
   const [addError, setAddError] = React.useState('');
   const [billSort, setBillSort] = React.useState({ key:'introduced', dir:'desc' });
   const [tlSort, setTlSort] = React.useState({ key:'date', dir:'desc' });
+  const [theme, setTheme] = React.useState(() => localStorage.getItem('reg-track-theme') || 'auto');
+  const cycleTheme = () => setTheme(prev => {
+    const next = prev === 'auto' ? 'light' : prev === 'light' ? 'dark' : 'auto';
+    localStorage.setItem('reg-track-theme', next);
+    return next;
+  });
+  React.useEffect(() => {
+    const el = document.documentElement;
+    el.classList.remove('light', 'dark');
+    if (theme !== 'auto') el.classList.add(theme);
+  }, [theme]);
+  const themeIcon = theme === 'auto' ? '\u25d1' : theme === 'light' ? '\u2600' : '\u263e';
   const [showAbout, setShowAbout] = React.useState(false);
   const [showAddEntryModal, setShowAddEntryModal] = React.useState(false);
   const [addEntryStep, setAddEntryStep] = React.useState(1);
@@ -1171,6 +1213,13 @@ const App = () => {
         </div>
         <div style={{display:'flex',alignItems:'center',gap:10}}>
           <span style={{fontSize:10,color:'#6b7280'}}>Updated: {ts}</span>
+          <button onClick={cycleTheme} title={`Theme: ${theme}`}
+            style={{fontSize:13,padding:'3px 10px',borderRadius:20,
+              backgroundColor:'transparent',
+              border:'1px solid #374151',
+              color:'#9ca3af',lineHeight:1}}>
+            {themeIcon}
+          </button>
           <button onClick={() => setShowAbout(s => !s)}
             style={{fontSize:11,padding:'3px 10px',borderRadius:20,
               backgroundColor: showAbout ? '#1d3a56' : 'transparent',
