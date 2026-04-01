@@ -840,6 +840,7 @@ const App = () => {
   const [addError, setAddError] = React.useState('');
   const [billSort, setBillSort] = React.useState({ key:'introduced', dir:'desc' });
   const [tlSort, setTlSort] = React.useState({ key:'date', dir:'desc' });
+  const [showAbout, setShowAbout] = React.useState(false);
   const [showAddEntryModal, setShowAddEntryModal] = React.useState(false);
   const [addEntryStep, setAddEntryStep] = React.useState(1);
   const [addEntrySeed, setAddEntrySeed] = React.useState('');
@@ -1170,6 +1171,13 @@ const App = () => {
         </div>
         <div style={{display:'flex',alignItems:'center',gap:10}}>
           <span style={{fontSize:10,color:'#6b7280'}}>Updated: {ts}</span>
+          <button onClick={() => setShowAbout(s => !s)}
+            style={{fontSize:11,padding:'3px 10px',borderRadius:20,
+              backgroundColor: showAbout ? '#1d3a56' : 'transparent',
+              border: `1px solid ${showAbout ? '#3b82f6' : '#374151'}`,
+              color: showAbout ? '#93c5fd' : '#9ca3af'}}>
+            {showAbout ? 'About \u25b4' : 'About \u25be'}
+          </button>
           <button onClick={() => setEditMode(e => !e)}
             style={{fontSize:11,padding:'3px 10px',borderRadius:20,
               backgroundColor: editMode ? '#dcfce7' : 'transparent',
@@ -1178,6 +1186,88 @@ const App = () => {
             {editMode ? 'editing on' : 'edit mode'}
           </button>
         </div>
+      </div>
+
+      {/* ABOUT STRIP */}
+      <div style={{borderBottom:'1px solid var(--border)'}}>
+        <div style={{backgroundColor:'var(--bg-secondary)',padding:'5px 16px',
+          display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
+          <span style={{fontSize:11,color:'var(--text-muted)',flexShrink:0}}>
+            US financial regulation &mdash;
+          </span>
+          <div style={{display:'flex',gap:4,flexWrap:'wrap'}}>
+            {Object.entries(DOMAIN).map(([k,v]) =>
+              <Pill key={k} label={v.label} a={v.a} bg={v.bg} t={v.t} sm />
+            )}
+          </div>
+        </div>
+        {showAbout && (
+          <div style={{backgroundColor:'var(--bg)',padding:'16px 18px',
+            borderTop:'1px solid var(--border)',
+            display:'grid',gridTemplateColumns:'2fr 1fr',gap:28}}>
+
+            {/* Left — scope */}
+            <div>
+              <div style={{fontSize:10,fontWeight:600,color:'var(--text-muted)',
+                textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:6}}>
+                About this tool
+              </div>
+              <p style={{fontSize:12,color:'var(--text)',lineHeight:1.65,marginBottom:14}}>
+                Tracks US Congressional legislation and federal agency regulatory actions
+                at the intersection of financial markets, digital assets, and market structure.
+                The Bills tab follows the full legislative lifecycle from introduction through
+                enactment. The Regulatory Timeline records agency rulemakings, guidance,
+                enforcement actions, and research across CFTC, Fed, SEC, OCC, FDIC, DOJ,
+                Treasury, and FinCEN. Entries are updated via AI-assisted web search and
+                are human-reviewable in edit mode.
+              </p>
+              <div style={{fontSize:10,fontWeight:600,color:'var(--text-muted)',
+                textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:7}}>
+                Coverage
+              </div>
+              <div style={{display:'flex',gap:5,flexWrap:'wrap'}}>
+                {Object.entries(DOMAIN).map(([k,v]) =>
+                  <Pill key={k} label={v.label} a={v.a} bg={v.bg} t={v.t} />
+                )}
+              </div>
+            </div>
+
+            {/* Right — sources, methodology, attribution */}
+            <div>
+              <div style={{fontSize:10,fontWeight:600,color:'var(--text-muted)',
+                textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:6}}>
+                Data sources
+              </div>
+              <div style={{fontSize:11,color:'var(--text-muted)',lineHeight:1.75,marginBottom:14}}>
+                <span style={{fontWeight:500,color:'var(--text)'}}>Bills</span><br/>
+                congress.gov &middot; GovTrack &middot; official press releases
+                <br/><br/>
+                <span style={{fontWeight:500,color:'var(--text)'}}>Regulatory timeline</span><br/>
+                CFTC &middot; Fed &middot; SEC &middot; OCC &middot; FDIC<br/>
+                DOJ &middot; Treasury &middot; FinCEN
+              </div>
+              <div style={{fontSize:10,fontWeight:600,color:'var(--text-muted)',
+                textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:6}}>
+                Methodology
+              </div>
+              <div style={{fontSize:11,color:'var(--text-muted)',lineHeight:1.65,marginBottom:14}}>
+                AI-assisted field extraction via web search. Agency, action type, and domain
+                classification are editable in edit mode. Source URLs link to canonical
+                agency documents.
+              </div>
+              <div style={{fontSize:10,color:'var(--text-muted)',
+                paddingTop:10,borderTop:'1px solid var(--border)',lineHeight:1.6}}>
+                <span style={{fontWeight:500,color:'var(--text)'}}>
+                  David Bieri
+                </span>
+                {' \u00b7 '}School of Public and International Affairs{' \u00b7 '}Virginia Tech
+                <br/>
+                For research and educational purposes only.
+              </div>
+            </div>
+
+          </div>
+        )}
       </div>
 
       {/* STATS BAR */}
