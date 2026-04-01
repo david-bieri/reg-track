@@ -74,6 +74,180 @@ a:hover { text-decoration: underline; }
 <body>
   <div id="root"></div>
   <script type="text/babel">
+/* ── colour-token maps ──────────────────────────── */
+const CAT = {
+  'Prediction Markets':  { bg:'var(--purple-bg)', t:'var(--purple-text)', a:'var(--purple)' },
+  'Digital Assets':      { bg:'var(--teal-bg)',   t:'var(--teal-text)',   a:'var(--teal)' },
+  'Stablecoins':         { bg:'var(--blue)',      t:'#fff',              a:'var(--blue)' },
+  'Market Structure':    { bg:'var(--orange-bg)', t:'var(--orange-text)', a:'var(--orange)' },
+  'Banking':             { bg:'var(--amber-bg)',  t:'var(--amber-text)',  a:'var(--amber)' },
+  'AML/KYC':             { bg:'var(--red-bg)',    t:'var(--red-text)',    a:'var(--red)' },
+  'Fintech':             { bg:'var(--green-bg)',  t:'var(--green-text)',  a:'var(--green)' },
+};
+
+const PARTY = {
+  R: { bg:'#fee2e2', t:'#991b1b', a:'#dc2626' },
+  D: { bg:'#dbeafe', t:'#1e40af', a:'#2563eb' },
+  Bipartisan: { bg:'#f3e8ff', t:'#6b21a8', a:'#7c3aed' },
+};
+
+const CHAMBERS = { Senate:'S', House:'H', Joint:'J' };
+
+const STAGES = ['Introduced','Committee','Floor Vote','Other Chamber','Signed'];
+
+const AGENCY_META = {
+  CFTC:  { bg:'var(--purple-bg)', t:'var(--purple-text)', a:'var(--purple)' },
+  SEC:   { bg:'var(--teal-bg)',   t:'var(--teal-text)',   a:'var(--teal)' },
+  Fed:   { bg:'var(--amber-bg)',  t:'var(--amber-text)',  a:'var(--amber)' },
+  OCC:   { bg:'var(--orange-bg)', t:'var(--orange-text)', a:'var(--orange)' },
+  FDIC:  { bg:'var(--green-bg)',  t:'var(--green-text)',  a:'var(--green)' },
+  DOJ:   { bg:'var(--red-bg)',    t:'var(--red-text)',    a:'var(--red)' },
+  Treasury:{ bg:'var(--light-blue)',t:'#1e3a5f',          a:'var(--blue)' },
+  FinCEN:{ bg:'var(--gray-bg)',   t:'var(--text-muted)',  a:'var(--mid-gray)' },
+};
+
+const ACTION_META = {
+  'Final Rule':       { bg:'var(--green-bg)',  t:'var(--green-text)',  a:'var(--green)' },
+  'Proposed Rule':    { bg:'var(--orange-bg)', t:'var(--orange-text)', a:'var(--orange)' },
+  'Guidance':         { bg:'var(--teal-bg)',   t:'var(--teal-text)',   a:'var(--teal)' },
+  'Enforcement':      { bg:'var(--red-bg)',    t:'var(--red-text)',    a:'var(--red)' },
+  'Staff Letter':     { bg:'var(--purple-bg)', t:'var(--purple-text)', a:'var(--purple)' },
+  'Research':         { bg:'var(--amber-bg)',  t:'var(--amber-text)',  a:'var(--amber)' },
+  'Inquiry':          { bg:'var(--light-blue)',t:'#1e3a5f',           a:'var(--blue)' },
+  'No-Action Letter': { bg:'var(--gray-bg)',   t:'var(--text-muted)',  a:'var(--mid-gray)' },
+};
+
+/* ── seed data: bills ──────────────────────────── */
+const SEED_BILLS = [
+  { id:'S.1234', title:'Prediction Market Integrity Act',
+    sponsor:'Sen. Lummis (R-WY)', party:'R', chamber:'Senate',
+    category:'Prediction Markets', status:'Committee',
+    introduced:'2026-03-05',
+    summary:'Establishes CFTC as primary regulator of event contracts on registered prediction markets. Defines lawful event contracts and prohibits binary contracts on assassination, terrorism, and election outcomes involving minors.',
+    teeth:'Civil penalties up to $1M per violation; criminal referral for manipulation.',
+    detail:'Referred to Senate Agriculture Committee. Hearing scheduled April 8, 2026.' },
+  { id:'H.R.2200', title:'Decentralized Prediction Market Study Act',
+    sponsor:'Rep. Emmer (R-MN)', party:'R', chamber:'House',
+    category:'Prediction Markets', status:'Introduced',
+    introduced:'2026-03-08',
+    summary:'Directs GAO to conduct a 12-month study on decentralized prediction markets, including Polymarket and Kalshi, evaluating systemic risk, information quality, and existing regulatory gaps.',
+    teeth:'Report due to Congress within 12 months; no direct penalty provisions.',
+    detail:'Referred to House Financial Services Committee.' },
+  { id:'S.1301', title:'Event Contract Clarity Act',
+    sponsor:'Sen. Hagerty (R-TN)', party:'R', chamber:'Senate',
+    category:'Prediction Markets', status:'Committee',
+    introduced:'2026-03-10',
+    summary:'Amends the Commodity Exchange Act to clarify that event contracts on economic indicators (CPI, NFP, GDP) are lawful commodity interests eligible for clearing on DCMs.',
+    teeth:'Safe harbor for compliant DCMs; sunset clause at 5 years.',
+    detail:'Co-sponsored by Sen. Tillis (R-NC). Markup tentatively scheduled May 2026.' },
+  { id:'H.R.2350', title:'Election Betting Prohibition Act',
+    sponsor:'Rep. Sherman (D-CA)', party:'D', chamber:'House',
+    category:'Prediction Markets', status:'Introduced',
+    introduced:'2026-03-12',
+    summary:'Prohibits any CFTC-regulated exchange from listing event contracts whose payoff depends on the outcome of any federal, state, or local election.',
+    teeth:'$500K fine per contract listed; exchange license suspension.',
+    detail:'Referred to House Agriculture Committee and House Financial Services Committee.' },
+  { id:'S.1400', title:'CFTC Prediction Market Oversight Funding Act',
+    sponsor:'Sen. Boozman (R-AR)', party:'R', chamber:'Senate',
+    category:'Prediction Markets', status:'Floor Vote',
+    introduced:'2026-03-15',
+    summary:'Appropriates $30M to the CFTC for FY2027 specifically earmarked for supervision and examination of designated contract markets listing event contracts.',
+    teeth:'Annual GAO audit of CFTC spending on prediction market oversight.',
+    detail:'Passed Senate Agriculture Committee 14-8. Floor vote expected week of April 14.' },
+  { id:'H.R.2500', title:'State Prediction Market Compact Act',
+    sponsor:'Rep. Hill (R-AR)', party:'Bipartisan', chamber:'House',
+    category:'Prediction Markets', status:'Introduced',
+    introduced:'2026-03-18',
+    summary:'Authorizes states to form interstate compacts for regulating prediction markets that operate below the federal threshold ($25M annual volume), preserving CFTC authority above that level.',
+    teeth:'Federal preemption for markets above threshold; state AG enforcement below.',
+    detail:'Bipartisan bill with Rep. Torres (D-NY) as original co-sponsor.' },
+  { id:'S.1500', title:'Prediction Market Consumer Protection Act',
+    sponsor:'Sen. Warren (D-MA)', party:'D', chamber:'Senate',
+    category:'Prediction Markets', status:'Committee',
+    introduced:'2026-03-22',
+    summary:'Requires prediction market exchanges to maintain a segregated customer fund, disclose resolution sources, and file quarterly risk reports with the CFTC.',
+    teeth:'Treble damages in private right of action for customer fund shortfalls.',
+    detail:'Referred to Senate Banking Committee. Warren seeks joint jurisdiction with Agriculture.' },
+  { id:'H.R.2650', title:'Forecasting Transparency in Government Act',
+    sponsor:'Rep. Auchincloss (D-MA)', party:'D', chamber:'House',
+    category:'Prediction Markets', status:'Introduced',
+    introduced:'2026-03-26',
+    summary:'Mandates that OMB publish real-time forecasting dashboards incorporating prediction market prices for key economic and policy indicators.',
+    teeth:'OMB compliance deadline 18 months after enactment; Inspector General review.',
+    detail:'Referred to House Oversight Committee. Companion to earlier Senate resolution.' },
+];
+
+/* ── seed data: timeline ───────────────────────── */
+const SEED_TIMELINE = [
+  { date:'2026-03-04', agency:'Fed', action:'Research',
+    title:'FEDS Working Paper: Price Discovery in Event Markets',
+    detail:'Board staff analyze information aggregation efficiency in CFTC-regulated prediction markets vs. traditional derivatives. Finds prediction market prices converge faster to fundamental value for binary outcomes.' },
+  { date:'2026-03-07', agency:'CFTC', action:'Guidance',
+    title:'Staff Advisory on Event Contract Listing Standards',
+    detail:'CFTC Division of Market Oversight issues advisory clarifying conditions under which DCMs may self-certify new event contracts without full Commission review.' },
+  { date:'2026-03-11', agency:'SEC', action:'Staff Letter',
+    title:'Staff Bulletin on Prediction Market Token Classification',
+    detail:'Division of Corporation Finance issues guidance that tokenized prediction market positions may constitute securities depending on the Howey analysis of the specific contract structure.' },
+  { date:'2026-03-13', agency:'CFTC', action:'Enforcement',
+    title:'CFTC Enforcement Action: Unregistered Offshore Platform',
+    detail:'CFTC files civil complaint against offshore prediction market for offering unregistered event contracts to U.S. persons. Seeks permanent injunction and $12M in disgorgement.' },
+  { date:'2026-03-17', agency:'Treasury', action:'Inquiry',
+    title:'Treasury RFI on Prediction Market Tax Treatment',
+    detail:'IRS/Treasury issue Request for Information on appropriate tax treatment of prediction market gains — whether to classify as capital gains, ordinary income, or gambling winnings.' },
+  { date:'2026-03-19', agency:'OCC', action:'Guidance',
+    title:'OCC Interpretive Letter: Bank Participation in Prediction Markets',
+    detail:'OCC concludes that national banks may clear and settle prediction market contracts as part of permissible banking activities, subject to risk management safeguards.' },
+  { date:'2026-03-21', agency:'CFTC', action:'Proposed Rule',
+    title:'CFTC NPRM: Event Contract Margin Requirements',
+    detail:'Commission proposes minimum margin requirements for event contracts on designated contract markets. Comment period 60 days. Proposes 10% initial margin for standard binary contracts.' },
+  { date:'2026-03-24', agency:'Fed', action:'Guidance',
+    title:'SR Letter 26-4: Supervisory Expectations for Bank Prediction Market Exposure',
+    detail:'Federal Reserve issues SR letter setting expectations for state member banks engaging in prediction market clearing, including capital charges and concentration limits.' },
+  { date:'2026-03-27', agency:'FinCEN', action:'Proposed Rule',
+    title:'FinCEN NPRM: AML/KYC Requirements for Prediction Market Platforms',
+    detail:'FinCEN proposes to designate prediction market platforms as money services businesses, requiring full BSA/AML compliance, SAR filing, and customer identification programs.' },
+  { date:'2026-03-30', agency:'DOJ', action:'Inquiry',
+    title:'DOJ Antitrust Inquiry: Prediction Market Concentration',
+    detail:'DOJ Antitrust Division opens preliminary inquiry into market concentration among prediction market exchanges, focusing on potential barriers to entry and data exclusivity agreements.' },
+];
+
+/* ── reusable components ───────────────────────── */
+const Pill = ({ label, a, bg, t, sm }) => (
+  <span style={{display:'inline-block',
+    padding: sm ? '1px 7px' : '2px 9px',
+    fontSize: sm ? 10 : 11, fontWeight: 500,
+    borderRadius: 20, whiteSpace: 'nowrap',
+    backgroundColor: bg, color: t,
+    border: `1px solid ${a}30`}}>
+    {label}
+  </span>
+);
+
+const StatusDots = ({ status }) => {
+  const idx = STAGES.indexOf(status);
+  const dead = status === 'Dead';
+  return (
+    <div style={{display:'flex',alignItems:'center',gap:3}}>
+      {STAGES.map((s, i) => (
+        <React.Fragment key={s}>
+          <div title={s} style={{width:8,height:8,borderRadius:'50%',flexShrink:0,
+            backgroundColor: dead ? 'var(--red)' : i <= idx
+              ? 'var(--green)' : 'var(--border)'}} />
+          {i < STAGES.length - 1 &&
+            <div style={{width:9,height:2,
+              backgroundColor: !dead && i < idx
+                ? 'var(--green)' : 'var(--border)'}} />}
+        </React.Fragment>
+      ))}
+      <span style={{fontSize:10,color:'var(--text-muted)',
+        marginLeft:4,whiteSpace:'nowrap'}}>
+        {dead ? 'Dead' : status}
+      </span>
+    </div>
+  );
+};
+
+/* ── app ───────────────────────────────────────── */
 const App = () => {
   const [activeTab, setActiveTab] = React.useState('bills');
   const [editMode, setEditMode] = React.useState(false);
@@ -124,8 +298,8 @@ const App = () => {
       <div style={{display:'flex',alignItems:'center',
         borderBottom:'1px solid var(--border)',
         backgroundColor:'var(--bg-secondary)',paddingLeft:14}}>
-        {[['bills','Congressional Bills',0],
-          ['timeline','Regulatory Timeline',0]].map(([id,label,count]) =>
+        {[['bills','Congressional Bills',SEED_BILLS.length],
+          ['timeline','Regulatory Timeline',SEED_TIMELINE.length]].map(([id,label,count]) =>
           <button key={id} onClick={() => setActiveTab(id)}
             style={{padding:'8px 18px',fontSize:12,fontWeight:500,
               cursor:'pointer',border:'none',
