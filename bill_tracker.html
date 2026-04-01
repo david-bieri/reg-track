@@ -732,7 +732,7 @@ const App = () => {
 
     const prompt = activeTab === 'bills'
       ? `Search for the very latest news today on US Congressional prediction market legislation. Currently tracking: ${bills.map(b => `[${b.id}] "${b.title}"`).join(', ')}. Find: (1) any new bills introduced, (2) status changes on existing bills (e.g. advanced to committee). Respond ONLY with compact valid JSON — no markdown, no backticks, no preamble: {"updates":[{"id":"S.1234","status":"Committee","notes":"Advanced to Senate Ag Committee"}],"newBills":[{"introduced":"2026-04-01","title":"...","id":"S.9999","chamber":"Senate","party":"R","sponsor":"...","category":"Prediction Markets","summary":"one clear sentence","teeth":"key enforcement detail","detail":"full text","status":"Introduced"}],"summary":"2-3 sentences on what changed today."}`
-      : `Search for the very latest prediction market regulatory actions today from CFTC, Fed, DOJ, SEC, or state regulators. Currently tracking: ${timeline.map(e => `[${e.id}] "${e.title}"`).join(', ')}. Find: any new agency actions, enforcement cases, research papers, litigation, or speeches since the last entry. Respond ONLY with compact valid JSON — no markdown, no backticks: {"newEntries":[{"date":"2026-04-01","agency":"CFTC","action":"Guidance","title":"...","detail":"2-3 sentences"}],"summary":"2-3 sentences on what is new."}`;
+      : `Search for the very latest financial regulatory actions today from CFTC, Fed, DOJ, SEC, Treasury, OCC, FDIC, or FinCEN. Currently tracking: ${timeline.map(e => `[${e.id}] "${e.title}"`).join(', ')}. Find: any new agency actions, enforcement cases, research papers, litigation, or speeches since the last entry. Respond ONLY with compact valid JSON — no markdown, no backticks: {"newEntries":[{"date":"2026-04-01","agency":"CFTC","action":"Guidance","domain":"prediction-markets or crypto or monetary-policy or fintech or financial-stability","title":"...","detail":"2-3 sentences","url":"canonical source URL or empty string"}],"summary":"2-3 sentences on what is new."}`;
 
     try {
       const resp = await fetch('https://api.anthropic.com/v1/messages', {
@@ -905,13 +905,9 @@ const App = () => {
     ? Object.entries(DOMAIN).map(([k, v]) => ({
         label: v.label.split(' ')[0], val: bills.filter(b => b.domain === k).length, color: v.a
       }))
-    : [
-        { label:'Total', val:timeline.length, color:'var(--text)' },
-        { label:'CFTC', val:timeline.filter(e => e.agency === 'CFTC').length, color:'var(--purple)' },
-        { label:'Fed', val:timeline.filter(e => e.agency === 'Fed').length, color:'var(--amber)' },
-        { label:'Enforcement', val:timeline.filter(e => e.action === 'Enforcement').length, color:'var(--red)' },
-        { label:'Research', val:timeline.filter(e => e.action === 'Research').length, color:'var(--teal)' },
-      ];
+    : Object.entries(DOMAIN).map(([k, v]) => ({
+        label: v.label.split(' ')[0], val: timeline.filter(e => e.domain === k).length, color: v.a
+      }));
 
   return (
     <div style={{minHeight:'100vh'}}>
