@@ -202,36 +202,40 @@ const SEED_BILLS = [
 
 /* ── seed data: timeline ───────────────────────── */
 const SEED_TIMELINE = [
-  { id:'tl-1', date:'2026-03-04', agency:'Fed', action:'Research',
+  { id:'tl-1', date:'2026-03-04', agency:'Fed', action:'Research', domain:'prediction-markets', url:'',
     title:'FEDS Working Paper: Price Discovery in Event Markets',
     detail:'Board staff analyze information aggregation efficiency in CFTC-regulated prediction markets vs. traditional derivatives. Finds prediction market prices converge faster to fundamental value for binary outcomes.' },
-  { id:'tl-2', date:'2026-03-07', agency:'CFTC', action:'Guidance',
+  { id:'tl-2', date:'2026-03-07', agency:'CFTC', action:'Guidance', domain:'prediction-markets', url:'',
     title:'Staff Advisory on Event Contract Listing Standards',
     detail:'CFTC Division of Market Oversight issues advisory clarifying conditions under which DCMs may self-certify new event contracts without full Commission review.' },
-  { id:'tl-3', date:'2026-03-11', agency:'SEC', action:'Staff Letter',
+  { id:'tl-3', date:'2026-03-11', agency:'SEC', action:'Staff Letter', domain:'prediction-markets', url:'',
     title:'Staff Bulletin on Prediction Market Token Classification',
     detail:'Division of Corporation Finance issues guidance that tokenized prediction market positions may constitute securities depending on the Howey analysis of the specific contract structure.' },
-  { id:'tl-4', date:'2026-03-13', agency:'CFTC', action:'Enforcement',
+  { id:'tl-4', date:'2026-03-13', agency:'CFTC', action:'Enforcement', domain:'prediction-markets', url:'',
     title:'CFTC Enforcement Action: Unregistered Offshore Platform',
-    detail:'CFTC files civil complaint against offshore prediction market for offering unregistered event contracts to U.S. persons. Seeks permanent injunction and $12M in disgorgement.' },
-  { id:'tl-5', date:'2026-03-17', agency:'Treasury', action:'Inquiry',
+    detail:'CFTC files civil complaint against offshore prediction market for offering unregistered event contracts to U.S. persons. Seeks permanent injunction and $12M in disborgement.' },
+  { id:'tl-5', date:'2026-03-17', agency:'Treasury', action:'Inquiry', domain:'prediction-markets', url:'',
     title:'Treasury RFI on Prediction Market Tax Treatment',
     detail:'IRS/Treasury issue Request for Information on appropriate tax treatment of prediction market gains — whether to classify as capital gains, ordinary income, or gambling winnings.' },
-  { id:'tl-6', date:'2026-03-19', agency:'OCC', action:'Guidance',
+  { id:'tl-6', date:'2026-03-19', agency:'OCC', action:'Guidance', domain:'prediction-markets', url:'',
     title:'OCC Interpretive Letter: Bank Participation in Prediction Markets',
     detail:'OCC concludes that national banks may clear and settle prediction market contracts as part of permissible banking activities, subject to risk management safeguards.' },
-  { id:'tl-7', date:'2026-03-21', agency:'CFTC', action:'Proposed Rule',
+  { id:'tl-7', date:'2026-03-21', agency:'CFTC', action:'Proposed Rule', domain:'prediction-markets', url:'',
     title:'CFTC NPRM: Event Contract Margin Requirements',
     detail:'Commission proposes minimum margin requirements for event contracts on designated contract markets. Comment period 60 days. Proposes 10% initial margin for standard binary contracts.' },
-  { id:'tl-8', date:'2026-03-24', agency:'Fed', action:'Guidance', isNew:true,
+  { id:'tl-8', date:'2026-03-24', agency:'Fed', action:'Guidance', domain:'prediction-markets', url:'', isNew:true,
     title:'SR Letter 26-4: Supervisory Expectations for Bank Prediction Market Exposure',
     detail:'Federal Reserve issues SR letter setting expectations for state member banks engaging in prediction market clearing, including capital charges and concentration limits.' },
-  { id:'tl-9', date:'2026-03-27', agency:'FinCEN', action:'Proposed Rule', isNew:true,
+  { id:'tl-9', date:'2026-03-27', agency:'FinCEN', action:'Proposed Rule', domain:'prediction-markets', url:'', isNew:true,
     title:'FinCEN NPRM: AML/KYC Requirements for Prediction Market Platforms',
     detail:'FinCEN proposes to designate prediction market platforms as money services businesses, requiring full BSA/AML compliance, SAR filing, and customer identification programs.' },
-  { id:'tl-10', date:'2026-03-30', agency:'DOJ', action:'Inquiry', isNew:true,
+  { id:'tl-10', date:'2026-03-30', agency:'DOJ', action:'Inquiry', domain:'prediction-markets', url:'', isNew:true,
     title:'DOJ Antitrust Inquiry: Prediction Market Concentration',
     detail:'DOJ Antitrust Division opens preliminary inquiry into market concentration among prediction market exchanges, focusing on potential barriers to entry and data exclusivity agreements.' },
+  { id:'tl-11', date:'2026-04-01', agency:'Treasury', action:'Proposed Rule', domain:'crypto', isNew:true,
+    url:'https://home.treasury.gov/news/press-releases/sb0428',
+    title:'Treasury NPRM: GENIUS Act State-Level Regulatory Regime Principles',
+    detail:'Treasury issues its first NPRM under the GENIUS Act, establishing broad-based principles for determining whether a state-level payment stablecoin regulatory regime is substantially similar to the federal framework. Applies to issuers with consolidated outstanding issuance ≤ $10B who opt for state regulation. Public comment period: 60 days from Federal Register publication via regulations.gov. Builds on the September 2025 ANPRM.' },
 ];
 
 /* ── reusable components ───────────────────────── */
@@ -454,6 +458,14 @@ const TimelineRow = ({ entry: e, expanded, onToggle, editMode, onUpdate }) => {
                       {Object.keys(ACTION_META).map(a =>
                         <option key={a} value={a}>{a}</option>)}
                     </select>
+                    <select value={e.domain || 'prediction-markets'}
+                      onChange={ev => onUpdate(e.id, 'domain', ev.target.value)}>
+                      {Object.entries(DOMAIN).map(([k,v]) =>
+                        <option key={k} value={k}>{v.label}</option>)}
+                    </select>
+                    <input type="text" placeholder="Source URL..."
+                      value={e.url || ''}
+                      onChange={ev => onUpdate(e.id, 'url', ev.target.value)} />
                     <textarea rows={2} placeholder="Notes..."
                       value={e.notes || ''}
                       onChange={ev => onUpdate(e.id, 'notes', ev.target.value)} />
@@ -465,8 +477,21 @@ const TimelineRow = ({ entry: e, expanded, onToggle, editMode, onUpdate }) => {
                     <div style={{fontSize:11,color:'var(--text-muted)',lineHeight:1.7}}>
                       Date: {e.date}<br/>
                       Agency: {e.agency}<br/>
-                      Action: {e.action}
+                      Action: {e.action}<br/>
+                      {e.domain && (() => {
+                        const d = DOMAIN[e.domain] || { a:'var(--mid-gray)', bg:'var(--gray-bg)', t:'var(--text-muted)', label: e.domain };
+                        return <><span>Domain: </span><Pill label={d.label} a={d.a} bg={d.bg} t={d.t} sm /></>;
+                      })()}
                     </div>
+                    {e.url && (
+                      <div style={{marginTop:8}}>
+                        <a href={e.url} target="_blank" rel="noopener noreferrer"
+                          style={{fontSize:11,color:'var(--blue)',display:'inline-flex',
+                            alignItems:'center',gap:3}}>
+                          Source ↗
+                        </a>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -648,7 +673,7 @@ const App = () => {
   const [expandedBill, setExpandedBill] = React.useState(null);
   const [expandedTl, setExpandedTl] = React.useState(null);
   const [billFilter, setBillFilter] = React.useState({ domain:'all', cat:'all', party:'all', q:'' });
-  const [tlFilter, setTlFilter] = React.useState({ agency:'all', action:'all', q:'' });
+  const [tlFilter, setTlFilter] = React.useState({ agency:'all', action:'all', domain:'all', q:'' });
   const [refreshing, setRefreshing] = React.useState(false);
   const [log, setLog] = React.useState('');
   const [showAddModal, setShowAddModal] = React.useState(false);
@@ -855,6 +880,7 @@ const App = () => {
   const filteredTl = timeline.filter(e => {
     if (tlFilter.agency !== 'all' && e.agency !== tlFilter.agency) return false;
     if (tlFilter.action !== 'all' && e.action !== tlFilter.action) return false;
+    if (tlFilter.domain !== 'all' && e.domain !== tlFilter.domain) return false;
     if (tlFilter.q) {
       const q = tlFilter.q.toLowerCase();
       if (!`${e.title} ${e.detail} ${e.notes || ''}`
@@ -1072,6 +1098,12 @@ const App = () => {
               <option value="all">All action types</option>
               {Object.keys(ACTION_META).map(k =>
                 <option key={k} value={k}>{k}</option>)}
+            </select>
+            <select value={tlFilter.domain}
+              onChange={e => setTlFilter(f => ({...f, domain: e.target.value}))}>
+              <option value="all">All domains</option>
+              {Object.entries(DOMAIN).map(([k,v]) =>
+                <option key={k} value={k}>{v.label}</option>)}
             </select>
             <div style={{marginLeft:'auto',display:'flex',gap:6}}>
               <button onClick={doRefresh} disabled={refreshing}
