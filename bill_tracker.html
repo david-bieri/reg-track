@@ -849,6 +849,7 @@ const AddEntryModal = ({
 
 /* ── persistence ───────────────────────────────── */
 const STORAGE_KEY = 'reg-track-v1';
+const API_KEY_STORE = 'reg-track-apikey';
 
 /* ── app ───────────────────────────────────────── */
 const App = () => {
@@ -883,6 +884,8 @@ const App = () => {
   }, [theme]);
   const themeIcon = theme === 'auto' ? '\u25d1' : theme === 'light' ? '\u2600' : '\u263e';
   const [showAbout, setShowAbout] = React.useState(false);
+  const [apiKey, setApiKey] = React.useState(() => localStorage.getItem(API_KEY_STORE) || '');
+  const saveApiKey = (v) => { setApiKey(v); localStorage.setItem(API_KEY_STORE, v); };
   const [showAddEntryModal, setShowAddEntryModal] = React.useState(false);
   const [addEntryStep, setAddEntryStep] = React.useState(1);
   const [addEntrySeed, setAddEntrySeed] = React.useState('');
@@ -933,6 +936,8 @@ const App = () => {
 
   /* Anthropic API refresh */
   const doRefresh = async () => {
+    const key = localStorage.getItem(API_KEY_STORE);
+    if (!key) { setLog('Set your Anthropic API key in the About panel first.'); return; }
     setRefreshing(true);
     setLog(`Searching for latest ${activeTab === 'bills'
       ? 'bill' : 'regulatory'} updates...`);
@@ -944,7 +949,7 @@ const App = () => {
     try {
       const resp = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey },
         body: JSON.stringify({
           model: 'claude-sonnet-4-20250514',
           max_tokens: 2000,
@@ -1014,12 +1019,14 @@ const App = () => {
   /* Add Bill — AI fetch + confirm */
   const doFetchBill = async () => {
     if (!addSeed.trim()) return;
+    const key = localStorage.getItem(API_KEY_STORE);
+    if (!key) { setAddError('Set your Anthropic API key in the About panel first.'); return; }
     setAddStep(2);
     setAddError('');
     try {
       const resp = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey },
         body: JSON.stringify({
           model: 'claude-sonnet-4-20250514',
           max_tokens: 1500,
@@ -1087,12 +1094,14 @@ const App = () => {
   /* Add Entry — URL fetch + confirm */
   const doFetchEntry = async () => {
     if (!addEntrySeed.trim()) return;
+    const key = localStorage.getItem(API_KEY_STORE);
+    if (!key) { setAddEntryError('Set your Anthropic API key in the About panel first.'); return; }
     setAddEntryStep(2);
     setAddEntryError('');
     try {
       const resp = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey },
         body: JSON.stringify({
           model: 'claude-sonnet-4-20250514',
           max_tokens: 1500,
@@ -1209,7 +1218,7 @@ const App = () => {
             Financial Regulation Tracker
           </span>
           <span style={{fontSize:10,padding:'2px 8px',borderRadius:20,
-            backgroundColor:'#1d3a56',color:'#93c5fd',marginLeft:4}}>v1.0</span>
+            backgroundColor:'#1d3a56',color:'#93c5fd',marginLeft:4}}>v1.3.1</span>
         </div>
         <div style={{display:'flex',alignItems:'center',gap:10}}>
           <span style={{fontSize:10,color:'#6b7280'}}>Updated: {ts}</span>
@@ -1303,6 +1312,32 @@ const App = () => {
                 AI-assisted field extraction via web search. Agency, action type, and domain
                 classification are editable in edit mode. Source URLs link to canonical
                 agency documents.
+              </div>
+              <div style={{fontSize:10,fontWeight:600,color:'var(--text-muted)',
+                textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:6}}>
+                API key
+              </div>
+              <div style={{marginBottom:14}}>
+                {apiKey ? (
+                  <div style={{fontSize:11,color:'var(--text-muted)'}}>
+                    {apiKey.slice(0,10)}&middot;&middot;&middot;&middot;&middot;
+                    {' '}<a href="#" onClick={e => { e.preventDefault(); saveApiKey(''); }}
+                      style={{color:'#ef4444',fontSize:10}}>Clear</a>
+                  </div>
+                ) : (
+                  <div style={{display:'flex',gap:4}}>
+                    <input type="password" placeholder="sk-ant-..."
+                      id="api-key-input"
+                      onKeyDown={e => { if (e.key === 'Enter') saveApiKey(e.target.value); }}
+                      style={{fontSize:11,flex:1,padding:'3px 6px',borderRadius:4,
+                        border:'1px solid var(--border)',backgroundColor:'var(--bg)',
+                        color:'var(--text)'}} />
+                    <button onClick={() => { const v = document.getElementById('api-key-input').value; if (v) saveApiKey(v); }}
+                      style={{fontSize:10,padding:'3px 8px',borderRadius:4,
+                        backgroundColor:'var(--navy)',color:'#93c5fd',
+                        border:'1px solid #374151',cursor:'pointer'}}>Save</button>
+                  </div>
+                )}
               </div>
               <div style={{fontSize:10,color:'var(--text-muted)',
                 paddingTop:10,borderTop:'1px solid var(--border)',lineHeight:1.6}}>
