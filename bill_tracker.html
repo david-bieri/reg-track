@@ -719,24 +719,24 @@ const AddEntryModal = ({
             <span style={{fontWeight:500,fontSize:14}}>Add regulatory entry</span>
             <span style={{fontSize:11,color:'var(--text-muted)',marginLeft:8}}>
               {step === 1 ? 'Paste a press release or agency URL'
-               : step === 2 ? 'Fetching\u2026'
+               : step === 2 ? 'Fetching…'
                : 'Review and confirm'}
             </span>
           </div>
           <button onClick={onClose}
             style={{background:'none',border:'none',fontSize:18,
-              cursor:'pointer',color:'var(--text-muted)',lineHeight:1}}>\u00d7</button>
+              cursor:'pointer',color:'var(--text-muted)',lineHeight:1}}>×</button>
         </div>
 
         <div style={{padding:16}}>
           {step === 1 && (
             <div>
               <p style={{fontSize:12,color:'var(--text-muted)',marginBottom:12,lineHeight:1.6}}>
-                Paste an official press release URL \u2014 Treasury, CFTC, Fed, SEC, OCC, FDIC, DOJ, or FinCEN.
+                Paste an official press release URL — Treasury, CFTC, Fed, SEC, OCC, FDIC, DOJ, or FinCEN.
                 The AI will fetch the page and pre-fill all fields.
               </p>
               <input type="url" value={seed} onChange={e => onSeedChange(e.target.value)}
-                placeholder='https://home.treasury.gov/news/press-releases/\u2026'
+                placeholder='https://home.treasury.gov/news/press-releases/…'
                 style={{width:'100%',marginBottom:10}}
                 autoFocus
                 onKeyDown={e => { if (e.key === 'Enter' && seed.trim()) onFetch(); }} />
@@ -747,7 +747,7 @@ const AddEntryModal = ({
                   style={{backgroundColor:'var(--navy)',color:'white',
                     border:'none',padding:'6px 16px',borderRadius:6,
                     opacity:seed.trim()?1:0.5,cursor:seed.trim()?'pointer':'default'}}>
-                  Fetch \u2197
+                  Fetch ↗
                 </button>
               </div>
             </div>
@@ -756,8 +756,8 @@ const AddEntryModal = ({
           {step === 2 && (
             <div style={{textAlign:'center',padding:'32px 0',
               color:'var(--text-muted)',fontSize:13}}>
-              <div style={{fontSize:22,marginBottom:12}}>\u22ef</div>
-              Fetching and extracting entry data\u2026
+              <div style={{fontSize:22,marginBottom:12}}>⋯</div>
+              Fetching and extracting entry data…
             </div>
           )}
 
@@ -836,7 +836,7 @@ const AddEntryModal = ({
                   style={{backgroundColor:'var(--green)',color:'white',
                     border:'none',padding:'7px 20px',borderRadius:6,
                     fontWeight:500,cursor:'pointer'}}>
-                  Add to tracker \u2713
+                  Add to tracker ✓
                 </button>
               </div>
             </div>
@@ -848,7 +848,19 @@ const AddEntryModal = ({
 };
 
 /* ── persistence ───────────────────────────────── */
-const STORAGE_KEY = 'reg-track-v1';
+const STORAGE_KEY    = 'reg-track-v1';
+const API_KEY_STORE  = 'reg-track-apikey';
+
+function getApiKey() {
+  try { return localStorage.getItem(API_KEY_STORE) || ''; }
+  catch(e) { return ''; }
+}
+function saveApiKey(k) {
+  try { localStorage.setItem(API_KEY_STORE, k.trim()); } catch(e) {}
+}
+function clearApiKey() {
+  try { localStorage.removeItem(API_KEY_STORE); } catch(e) {}
+}
 
 /* ── app ───────────────────────────────────────── */
 const App = () => {
@@ -883,6 +895,8 @@ const App = () => {
   }, [theme]);
   const themeIcon = theme === 'auto' ? '\u25d1' : theme === 'light' ? '\u2600' : '\u263e';
   const [showAbout, setShowAbout] = React.useState(false);
+  const [apiKey, setApiKey] = React.useState(() => getApiKey());
+  const [apiKeyInput, setApiKeyInput] = React.useState('');
   const [showAddEntryModal, setShowAddEntryModal] = React.useState(false);
   const [addEntryStep, setAddEntryStep] = React.useState(1);
   const [addEntrySeed, setAddEntrySeed] = React.useState('');
@@ -942,9 +956,11 @@ const App = () => {
       : `Search for the very latest financial regulatory actions today from CFTC, Fed, DOJ, SEC, Treasury, OCC, FDIC, or FinCEN. Currently tracking: ${timeline.map(e => `[${e.id}] "${e.title}"`).join(', ')}. Find: any new agency actions, enforcement cases, research papers, litigation, or speeches since the last entry. Respond ONLY with compact valid JSON — no markdown, no backticks: {"newEntries":[{"date":"2026-04-01","agency":"CFTC","action":"Guidance","domain":"prediction-markets or crypto or monetary-policy or fintech or financial-stability","title":"...","detail":"2-3 sentences","url":"canonical source URL or empty string"}],"summary":"2-3 sentences on what is new."}`;
 
     try {
+      const key = getApiKey();
+      if (!key) { setLog('API key required — open About panel to add your key.'); setRefreshing(false); return; }
       const resp = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-dangerous-direct-browser-access': 'true' },
         body: JSON.stringify({
           model: 'claude-sonnet-4-20250514',
           max_tokens: 2000,
@@ -1017,9 +1033,11 @@ const App = () => {
     setAddStep(2);
     setAddError('');
     try {
+      const key = getApiKey();
+      if (!key) { setAddError('API key required — open About panel to add your key.'); setAddStep(1); return; }
       const resp = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-dangerous-direct-browser-access': 'true' },
         body: JSON.stringify({
           model: 'claude-sonnet-4-20250514',
           max_tokens: 1500,
@@ -1090,15 +1108,17 @@ const App = () => {
     setAddEntryStep(2);
     setAddEntryError('');
     try {
+      const key = getApiKey();
+      if (!key) { setAddEntryError('API key required — open About panel to add your key.'); setAddEntryStep(1); return; }
       const resp = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-dangerous-direct-browser-access': 'true' },
         body: JSON.stringify({
           model: 'claude-sonnet-4-20250514',
           max_tokens: 1500,
           tools: [{ type: 'web_search_20250305', name: 'web_search' }],
           messages: [{ role: 'user',
-            content: `Fetch this URL and extract regulatory action data: "${addEntrySeed}"\n\nReturn ONLY compact valid JSON \u2014 no markdown, no backticks:\n{"date":"2026-MM-DD","agency":"Treasury","action":"Proposed Rule","domain":"crypto","title":"Short descriptive title (10 words max)","detail":"2-3 sentence summary of what this action does, who it affects, and key requirements or deadlines.","url":"${addEntrySeed}"}\n\nagency must be one of: CFTC, SEC, Fed, OCC, FDIC, DOJ, Treasury, FinCEN\naction must be one of: Final Rule, Proposed Rule, Guidance, Enforcement, Staff Letter, Research, Inquiry, No-Action Letter\ndomain must be one of: prediction-markets, crypto, monetary-policy, fintech, financial-stability\ndate must be YYYY-MM-DD format.`
+            content: `Fetch this URL and extract regulatory action data: "${addEntrySeed}"\n\nReturn ONLY compact valid JSON — no markdown, no backticks:\n{"date":"2026-MM-DD","agency":"Treasury","action":"Proposed Rule","domain":"crypto","title":"Short descriptive title (10 words max)","detail":"2-3 sentence summary of what this action does, who it affects, and key requirements or deadlines.","url":"${addEntrySeed}"}\n\nagency must be one of: CFTC, SEC, Fed, OCC, FDIC, DOJ, Treasury, FinCEN\naction must be one of: Final Rule, Proposed Rule, Guidance, Enforcement, Staff Letter, Research, Inquiry, No-Action Letter\ndomain must be one of: prediction-markets, crypto, monetary-policy, fintech, financial-stability\ndate must be YYYY-MM-DD format.`
           }]
         })
       });
@@ -1209,7 +1229,7 @@ const App = () => {
             Financial Regulation Tracker
           </span>
           <span style={{fontSize:10,padding:'2px 8px',borderRadius:20,
-            backgroundColor:'#1d3a56',color:'#93c5fd',marginLeft:4}}>v1.0</span>
+            backgroundColor:'#1d3a56',color:'#93c5fd',marginLeft:4}}>v1.3.1</span>
         </div>
         <div style={{display:'flex',alignItems:'center',gap:10}}>
           <span style={{fontSize:10,color:'#6b7280'}}>Updated: {ts}</span>
@@ -1225,7 +1245,7 @@ const App = () => {
               backgroundColor: showAbout ? '#1d3a56' : 'transparent',
               border: `1px solid ${showAbout ? '#3b82f6' : '#374151'}`,
               color: showAbout ? '#93c5fd' : '#9ca3af'}}>
-            {showAbout ? 'About \u25b4' : 'About \u25be'}
+            {showAbout ? 'About ▴' : 'About ▾'}
           </button>
           <button onClick={() => setEditMode(e => !e)}
             style={{fontSize:11,padding:'3px 10px',borderRadius:20,
@@ -1304,12 +1324,67 @@ const App = () => {
                 classification are editable in edit mode. Source URLs link to canonical
                 agency documents.
               </div>
-              <div style={{fontSize:10,color:'var(--text-muted)',
-                paddingTop:10,borderTop:'1px solid var(--border)',lineHeight:1.6}}>
+              <div style={{paddingTop:10,borderTop:'1px solid var(--border)',marginBottom:12}}>
+                <div style={{fontSize:10,fontWeight:600,color:'var(--text-muted)',
+                  textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:6}}>
+                  API key
+                </div>
+                {apiKey ? (
+                  <div style={{display:'flex',alignItems:'center',gap:8}}>
+                    <span style={{fontSize:11,color:'var(--text)',fontFamily:'monospace',
+                      letterSpacing:'0.03em'}}>
+                      {apiKey.slice(0,10)}{'·'.repeat(8)}
+                    </span>
+                    <button onClick={() => { clearApiKey(); setApiKey(''); setApiKeyInput(''); }}
+                      style={{fontSize:10,color:'var(--red)',background:'none',
+                        border:'none',cursor:'pointer',padding:0}}>
+                      Clear
+                    </button>
+                  </div>
+                ) : (
+                  <div>
+                    <div style={{display:'flex',gap:6,marginBottom:5}}>
+                      <input
+                        type="password"
+                        placeholder="sk-ant-..."
+                        value={apiKeyInput}
+                        onChange={e => setApiKeyInput(e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter' && apiKeyInput.trim().startsWith('sk-')) {
+                            saveApiKey(apiKeyInput);
+                            setApiKey(apiKeyInput.trim());
+                            setApiKeyInput('');
+                          }
+                        }}
+                        style={{flex:1,fontSize:11}} />
+                      <button
+                        onClick={() => {
+                          if (apiKeyInput.trim().startsWith('sk-')) {
+                            saveApiKey(apiKeyInput);
+                            setApiKey(apiKeyInput.trim());
+                            setApiKeyInput('');
+                          }
+                        }}
+                        disabled={!apiKeyInput.trim().startsWith('sk-')}
+                        style={{fontSize:11,padding:'4px 10px',borderRadius:4,
+                          backgroundColor:'var(--navy)',color:'white',border:'none',
+                          opacity:apiKeyInput.trim().startsWith('sk-')?1:0.4,
+                          cursor:apiKeyInput.trim().startsWith('sk-')?'pointer':'default'}}>
+                        Save
+                      </button>
+                    </div>
+                    <div style={{fontSize:10,color:'var(--text-muted)',lineHeight:1.5}}>
+                      Required for Refresh and Add entry features.
+                      Stored in localStorage — never transmitted except to api.anthropic.com.
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div style={{fontSize:10,color:'var(--text-muted)',lineHeight:1.6}}>
                 <span style={{fontWeight:500,color:'var(--text)'}}>
                   David Bieri
                 </span>
-                {' \u00b7 '}School of Public and International Affairs{' \u00b7 '}Virginia Tech
+                {' · '}School of Public and International Affairs{' · '}Virginia Tech
                 <br/>
                 For research and educational purposes only.
               </div>
