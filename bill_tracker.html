@@ -978,9 +978,16 @@ const AddSignalModal = ({ step, seed, onSeedChange, onFetch, onManual, draft, on
 
           {step===3 && draft && (
             <div>
-              <p style={{fontSize:12,color:'var(--text-muted)',marginBottom:14,lineHeight:1.6}}>
+              <p style={{fontSize:12,color:'var(--text-muted)',marginBottom:10,lineHeight:1.6}}>
                 Review pre-filled fields below. Edit anything before adding.
               </p>
+              {error && (
+                <div style={{fontSize:11,color:'var(--orange)',marginBottom:10,
+                  padding:'6px 10px',borderRadius:4,
+                  backgroundColor:'var(--orange-bg)',border:'1px solid var(--orange)20'}}>
+                  ⚠ {error}
+                </div>
+              )}
               <div style={{marginBottom:10}}>
                 <label style={{display:'block',fontSize:10,fontWeight:500,color:'var(--text-muted)',
                   textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:3}}>Title</label>
@@ -1744,13 +1751,15 @@ const App = () => {
     if (!addSigSeed.trim()) return;
     setAddSigStep(2);
     setAddSigError('');
-    const isUrl = addSigSeed.trim().startsWith('http');
+    // Strip trailing ? from URLs
+    const cleanSeed = addSigSeed.trim().replace(/\?+$/, '');
+    const isUrl = cleanSeed.startsWith('http');
     try {
       const key = getApiKey();
       if (!key) { setAddSigError('API key required — open About panel to add your key.'); setAddSigStep(1); return; }
       const prompt = isUrl
-        ? `Fetch this URL and extract the regulatory or financial news item: "${addSigSeed.trim()}"\n\nReturn ONLY compact valid JSON — no markdown, no backticks:\n{"date":"2026-MM-DD","source":"Treasury or American Banker etc","sourceType":"Press Release or News Article or Newsletter or Advisory or Speech or Report","title":"Short descriptive title (max 15 words)","summary":"2-3 sentence plain-English summary of what happened, who it affects, and key requirements or deadlines.","detail":"Full context, 3-5 sentences including background, significance, and next steps if known.","sector":"Housing / Mortgage or Crypto / Digital or Insurance or Banking / Prudential or Consumer Protection or Securities or Monetary Policy or Cross-Sector","significance":"Low or Medium or High","url":"${addSigSeed.trim()}"}`
-        : `Parse this pasted regulatory or financial news content and extract structured data:\n\n${addSigSeed.trim()}\n\nReturn ONLY compact valid JSON — no markdown, no backticks:\n{"date":"2026-MM-DD","source":"issuing body name e.g. Treasury, Fed, American Banker","sourceType":"Press Release or News Article or Newsletter or Advisory or Speech or Report","title":"Short descriptive title (max 15 words)","summary":"2-3 sentence plain-English summary.","detail":"3-5 sentence context including significance and next steps.","sector":"Housing / Mortgage or Crypto / Digital or Insurance or Banking / Prudential or Consumer Protection or Securities or Monetary Policy or Cross-Sector","significance":"Low or Medium or High","url":""}`;
+        ? `Fetch this URL and extract the regulatory or financial news item: "${cleanSeed}"\n\nReturn ONLY compact valid JSON — no markdown, no backticks, no extra text before or after the JSON object:\n{"date":"2026-MM-DD","source":"Treasury or American Banker etc","sourceType":"Press Release or News Article or Newsletter or Advisory or Speech or Report","title":"Short descriptive title (max 15 words)","summary":"2-3 sentence plain-English summary of what happened, who it affects, and key requirements or deadlines.","detail":"Full context, 3-5 sentences including background, significance, and next steps if known.","sector":"Housing / Mortgage or Crypto / Digital or Insurance or Banking / Prudential or Consumer Protection or Securities or Monetary Policy or Cross-Sector","significance":"Low or Medium or High","url":"${cleanSeed}"}`
+        : `Parse this pasted regulatory or financial news content and extract structured data:\n\n${cleanSeed}\n\nReturn ONLY compact valid JSON — no markdown, no backticks, no extra text before or after the JSON object:\n{"date":"2026-MM-DD","source":"issuing body name e.g. Treasury, Fed, American Banker","sourceType":"Press Release or News Article or Newsletter or Advisory or Speech or Report","title":"Short descriptive title (max 15 words)","summary":"2-3 sentence plain-English summary.","detail":"3-5 sentence context including significance and next steps.","sector":"Housing / Mortgage or Crypto / Digital or Insurance or Banking / Prudential or Consumer Protection or Securities or Monetary Policy or Cross-Sector","significance":"Low or Medium or High","url":""}`;
 
       const resp = await fetch('https://api.anthropic.com/v1/messages', {
         method:'POST',
@@ -1763,27 +1772,30 @@ const App = () => {
       });
       const data = await resp.json();
       const text = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
-      const m = text.match(/\{[\s\S]*\}/);
+      // Try to extract JSON — be lenient with surrounding text
+      const m = text.match(/\{[\s\S]*?\}(?=\s*$)/) || text.match(/\{[\s\S]*\}/);
+      let raw = null;
       if (m) {
-        const raw = JSON.parse(m[0]);
-        setAddSigDraft({
-          date: raw.date || new Date().toISOString().slice(0,10),
-          source: raw.source || '',
-          sourceType: raw.sourceType || 'News Article',
-          title: raw.title || '',
-          summary: raw.summary || '',
-          detail: raw.detail || '',
-          sector: raw.sector || 'Cross-Sector',
-          significance: raw.significance || 'Medium',
-          url: raw.url || (isUrl ? addSigSeed.trim() : ''),
-          notes: '',
-          isNew: true,
-        });
-        setAddSigStep(3);
-      } else {
-        setAddSigError('Could not parse content. Try pasting more complete text or a different URL.');
-        setAddSigStep(1);
+        try { raw = JSON.parse(m[0]); } catch(e) { raw = null; }
       }
+      // Always advance to step 3 — with extracted data or empty draft for manual fill
+      setAddSigDraft({
+        date: raw?.date || new Date().toISOString().slice(0,10),
+        source: raw?.source || '',
+        sourceType: raw?.sourceType || 'News Article',
+        title: raw?.title || '',
+        summary: raw?.summary || '',
+        detail: raw?.detail || '',
+        sector: raw?.sector || 'Cross-Sector',
+        significance: raw?.significance || 'Medium',
+        url: raw?.url || (isUrl ? cleanSeed : ''),
+        notes: '',
+        isNew: true,
+      });
+      if (!raw) {
+        setAddSigError('Could not auto-extract all fields — please fill in the form below.');
+      }
+      setAddSigStep(3);
     } catch(err) {
       setAddSigError(`Error: ${err.message}`);
       setAddSigStep(1);
