@@ -184,8 +184,9 @@ const SECTOR_META = {
 const SOURCE_TYPE_META = {
   'Press Release': { bg:'var(--light-blue)', t:'#1e3a5f', a:'var(--blue)' },
   'News Article':  { bg:'var(--gray-bg)',    t:'var(--text-muted)', a:'var(--mid-gray)' },
-  'Newsletter':    { bg:'var(--purple-bg)',  t:'var(--purple-text)', a:'var(--purple)' },
-  'Advisory':      { bg:'var(--amber-bg)',   t:'var(--amber-text)',  a:'var(--amber)' },
+  'Blog':          { bg:'var(--purple-bg)',  t:'var(--purple-text)', a:'var(--purple)' },
+  'Newsletter':    { bg:'var(--amber-bg)',   t:'var(--amber-text)',  a:'var(--amber)' },
+  'Advisory':      { bg:'var(--teal-bg)',    t:'var(--teal-text)',   a:'var(--teal)' },
   'Speech':        { bg:'var(--green-bg)',   t:'var(--green-text)',  a:'var(--green)' },
   'Report':        { bg:'var(--orange-bg)',  t:'var(--orange-text)', a:'var(--orange)' },
 };
@@ -1757,9 +1758,11 @@ const App = () => {
     try {
       const key = getApiKey();
       if (!key) { setAddSigError('API key required — open About panel to add your key.'); setAddSigStep(1); return; }
+      const urlSlug = cleanSeed.split('/').filter(Boolean).pop() || '';
+      const slugAsTitle = urlSlug.replace(/-/g,' ');
       const prompt = isUrl
-        ? `Fetch this URL and extract the regulatory or financial news item: "${cleanSeed}"\n\nReturn ONLY compact valid JSON — no markdown, no backticks, no extra text before or after the JSON object:\n{"date":"2026-MM-DD","source":"Treasury or American Banker etc","sourceType":"Press Release or News Article or Newsletter or Advisory or Speech or Report","title":"Short descriptive title (max 15 words)","summary":"2-3 sentence plain-English summary of what happened, who it affects, and key requirements or deadlines.","detail":"Full context, 3-5 sentences including background, significance, and next steps if known.","sector":"Housing / Mortgage or Crypto / Digital or Insurance or Banking / Prudential or Consumer Protection or Securities or Monetary Policy or Cross-Sector","significance":"Low or Medium or High","url":"${cleanSeed}"}`
-        : `Parse this pasted regulatory or financial news content and extract structured data:\n\n${cleanSeed}\n\nReturn ONLY compact valid JSON — no markdown, no backticks, no extra text before or after the JSON object:\n{"date":"2026-MM-DD","source":"issuing body name e.g. Treasury, Fed, American Banker","sourceType":"Press Release or News Article or Newsletter or Advisory or Speech or Report","title":"Short descriptive title (max 15 words)","summary":"2-3 sentence plain-English summary.","detail":"3-5 sentence context including significance and next steps.","sector":"Housing / Mortgage or Crypto / Digital or Insurance or Banking / Prudential or Consumer Protection or Securities or Monetary Policy or Cross-Sector","significance":"Low or Medium or High","url":""}`;
+        ? `Search for information about this article or page and extract its content: "${cleanSeed}"\n\nSearch strategy: (1) search for the URL directly, (2) if content is thin, search for the title implied by the URL slug "${slugAsTitle}" plus the domain name, (3) use any available content to fill the fields below.\n\nReturn ONLY compact valid JSON — no markdown, no backticks, no extra text before or after the JSON object:\n{"date":"2026-MM-DD","source":"name of the publishing organization or outlet","sourceType":"Press Release or News Article or Blog or Newsletter or Advisory or Speech or Report","title":"title of the article or post (infer from URL slug if needed)","summary":"2-3 sentence plain-English summary of what the article covers, who it affects, and key points.","detail":"3-5 sentence context including background, significance, and next steps if known. If content was unavailable, note that.","sector":"Housing / Mortgage or Crypto / Digital or Insurance or Banking / Prudential or Consumer Protection or Securities or Monetary Policy or Cross-Sector","significance":"Low or Medium or High","url":"${cleanSeed}"}`
+        : `Parse this pasted regulatory or financial news content and extract structured data:\n\n${cleanSeed}\n\nReturn ONLY compact valid JSON — no markdown, no backticks, no extra text before or after the JSON object:\n{"date":"2026-MM-DD","source":"issuing body name e.g. Treasury, Fed, American Banker, Cato Institute","sourceType":"Press Release or News Article or Blog or Newsletter or Advisory or Speech or Report","title":"Short descriptive title (max 15 words)","summary":"2-3 sentence plain-English summary.","detail":"3-5 sentence context including significance and next steps.","sector":"Housing / Mortgage or Crypto / Digital or Insurance or Banking / Prudential or Consumer Protection or Securities or Monetary Policy or Cross-Sector","significance":"Low or Medium or High","url":""}`;
 
       const resp = await fetch('https://api.anthropic.com/v1/messages', {
         method:'POST',
