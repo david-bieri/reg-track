@@ -1761,23 +1761,53 @@ const App = () => {
       const urlSlug = cleanSeed.split('/').filter(Boolean).pop()?.replace(/\.[^.]+$/, '') || '';
       const slugAsTitle = urlSlug.replace(/-/g,' ');
       const domain = cleanSeed.match(/https?:\/\/([^/]+)/)?.[1] || '';
-      const prompt = isUrl
-        ? `Use web search to find and extract content from this page: "${cleanSeed}"\n\nSearch strategy: (1) search for the exact URL to find indexed content, (2) if that fails, search for "${slugAsTitle} ${domain}" to find the article by title and domain, (3) use any content found to fill all fields below. Do NOT attempt to fetch the URL directly — use web_search only.\n\nReturn ONLY compact valid JSON — no markdown, no backticks, no extra text:\n{"date":"2026-MM-DD","source":"name of the publishing organization (e.g. Federal Reserve, Cato Institute, American Banker)","sourceType":"Press Release or News Article or Blog or Newsletter or Advisory or Speech or Report","title":"title of the article or speech (infer from URL slug if needed: '${slugAsTitle}')","summary":"2-3 sentence plain-English summary of what the article covers, who it affects, and key points.","detail":"3-5 sentence context including background, significance, and next steps. If content was unavailable note that.","sector":"Housing / Mortgage or Crypto / Digital or Insurance or Banking / Prudential or Consumer Protection or Securities or Monetary Policy or Cross-Sector","significance":"Low or Medium or High","url":"${cleanSeed}"}`
-        : `Parse this pasted regulatory or financial news content and extract structured data:\n\n${cleanSeed}\n\nReturn ONLY compact valid JSON — no markdown, no backticks, no extra text before or after the JSON object:\n{"date":"2026-MM-DD","source":"issuing body name e.g. Treasury, Fed, American Banker, Cato Institute","sourceType":"Press Release or News Article or Blog or Newsletter or Advisory or Speech or Report","title":"Short descriptive title (max 15 words)","summary":"2-3 sentence plain-English summary.","detail":"3-5 sentence context including significance and next steps.","sector":"Housing / Mortgage or Crypto / Digital or Insurance or Banking / Prudential or Consumer Protection or Securities or Monetary Policy or Cross-Sector","significance":"Low or Medium or High","url":""}`;
 
-      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      let contentForExtraction = '';
+
+      if (isUrl) {
+        // ── Call 1: Search for the content ──
+        const searchPrompt = `Use web search to find the content at this URL: "${cleanSeed}"\n\nSearch strategy:\n1. Search for the exact URL\n2. If content is thin, search for "${slugAsTitle} site:${domain}"\n3. Summarize ALL content found about this page in detail — title, date, authors, full abstract or article body, key points. Be thorough.`;
+
+        const searchResp = await fetch('https://api.anthropic.com/v1/messages', {
+          method:'POST',
+          headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-dangerous-direct-browser-access':'true'},
+          body: JSON.stringify({
+            model:'claude-sonnet-4-20250514', max_tokens:1500,
+            tools:[{ type:'web_search_20250305', name:'web_search' }],
+            messages:[{ role:'user', content: searchPrompt }]
+          })
+        });
+        const searchData = await searchResp.json();
+        contentForExtraction = (searchData.content||[])
+          .filter(b=>b.type==='text').map(b=>b.text).join('');
+        if (!contentForExtraction.trim()) {
+          contentForExtraction = `URL: ${cleanSeed}\nTitle hint from URL slug: ${slugAsTitle}\nDomain: ${domain}`;
+        }
+      } else {
+        contentForExtraction = cleanSeed;
+      }
+
+      // ── Call 2: Extract structured JSON from content (no tools, with prefill) ──
+      const extractPrompt = isUrl
+        ? `Based on the following content retrieved about "${cleanSeed}", extract structured fields.\n\nContent:\n${contentForExtraction}\n\nReturn structured data as JSON.`
+        : `Parse this pasted regulatory or financial news content:\n\n${contentForExtraction}\n\nReturn structured data as JSON.`;
+
+      const schema = `{"date":"YYYY-MM-DD","source":"publishing organization name","sourceType":"Press Release or News Article or Blog or Newsletter or Advisory or Speech or Report","title":"title (max 15 words)","summary":"2-3 sentence plain-English summary","detail":"3-5 sentence context including significance and next steps","sector":"Housing / Mortgage or Crypto / Digital or Insurance or Banking / Prudential or Consumer Protection or Securities or Monetary Policy or Cross-Sector","significance":"Low or Medium or High","url":"${isUrl ? cleanSeed : ''}"}`;
+
+      const extractResp = await fetch('https://api.anthropic.com/v1/messages', {
         method:'POST',
         headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-dangerous-direct-browser-access':'true'},
         body: JSON.stringify({
-          model:'claude-sonnet-4-20250514', max_tokens:1200,
-          tools: isUrl ? [{ type:'web_search_20250305', name:'web_search' }] : [],
-          messages:[{ role:'user', content: prompt }]
+          model:'claude-sonnet-4-20250514', max_tokens:800,
+          messages:[
+            { role:'user', content:`${extractPrompt}\n\nRespond with ONLY a JSON object matching this schema exactly — no markdown, no preamble:\n${schema}` },
+            { role:'assistant', content:'{' }
+          ]
         })
       });
-      const data = await resp.json();
-      const text = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
-      // Try to extract JSON — be lenient with surrounding text
-      const m = text.match(/\{[\s\S]*?\}(?=\s*$)/) || text.match(/\{[\s\S]*\}/);
+      const extractData = await extractResp.json();
+      const rawText = '{' + ((extractData.content||[]).filter(b=>b.type==='text').map(b=>b.text).join(''));
+      const m = rawText.match(/\{[\s\S]*?\}(?=\s*$)/) || rawText.match(/\{[\s\S]*\}/);
       let raw = null;
       if (m) {
         try { raw = JSON.parse(m[0]); } catch(e) { raw = null; }
