@@ -3,7 +3,7 @@
 Browser-based tracker for Congressional financial regulation bills
 and federal regulatory actions.
 
-**Live:** davidbieri.github.io/reg-track
+**Live:** david-bieri.github.io/reg-track
 
 ## Features
 - Multi-domain bill tracking: prediction markets, crypto, monetary policy,
