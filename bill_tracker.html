@@ -1747,88 +1747,52 @@ const App = () => {
     } catch(e) {}
   }, []);
 
-  /* Add Signal — unified URL / raw text fetch */
+  /* Add Signal — single call, mirrors doFetchEntry pattern */
   const doFetchSignal = async () => {
     if (!addSigSeed.trim()) return;
     setAddSigStep(2);
     setAddSigError('');
-    // Strip trailing ? from URLs
     const cleanSeed = addSigSeed.trim().replace(/\?+$/, '');
     const isUrl = cleanSeed.startsWith('http');
     try {
       const key = getApiKey();
       if (!key) { setAddSigError('API key required — open About panel to add your key.'); setAddSigStep(1); return; }
-      const urlSlug = cleanSeed.split('/').filter(Boolean).pop()?.replace(/\.[^.]+$/, '') || '';
-      const slugAsTitle = urlSlug.replace(/-/g,' ');
-      const domain = cleanSeed.match(/https?:\/\/([^/]+)/)?.[1] || '';
 
-      let contentForExtraction = '';
+      const prompt = isUrl
+        ? `Search for this URL and extract the regulatory or financial news item: "${cleanSeed}"\n\nReturn ONLY compact valid JSON — no markdown, no backticks:\n{"date":"YYYY-MM-DD","source":"publishing org name","sourceType":"Press Release","title":"title max 15 words","summary":"2-3 sentence summary","detail":"3-5 sentence detail","sector":"Banking / Prudential","significance":"Medium","url":"${cleanSeed}"}\n\nsourceType must be one of: Press Release, News Article, Blog, Newsletter, Advisory, Speech, Report\nsector must be one of: Housing / Mortgage, Crypto / Digital, Insurance, Banking / Prudential, Consumer Protection, Securities, Monetary Policy, Cross-Sector\nsignificance must be one of: Low, Medium, High\ndate must be YYYY-MM-DD format.`
+        : `Extract structured data from this pasted content:\n\n${cleanSeed}\n\nReturn ONLY compact valid JSON — no markdown, no backticks:\n{"date":"YYYY-MM-DD","source":"publishing org name","sourceType":"Press Release","title":"title max 15 words","summary":"2-3 sentence summary","detail":"3-5 sentence detail","sector":"Banking / Prudential","significance":"Medium","url":""}\n\nsourceType must be one of: Press Release, News Article, Blog, Newsletter, Advisory, Speech, Report\nsector must be one of: Housing / Mortgage, Crypto / Digital, Insurance, Banking / Prudential, Consumer Protection, Securities, Monetary Policy, Cross-Sector\nsignificance must be one of: Low, Medium, High\ndate must be YYYY-MM-DD format.`;
 
-      if (isUrl) {
-        // ── Call 1: Search for the content ──
-        const searchPrompt = `Use web search to find the content at this URL: "${cleanSeed}"\n\nSearch strategy:\n1. Search for the exact URL\n2. If content is thin, search for "${slugAsTitle} site:${domain}"\n3. Summarize ALL content found about this page in detail — title, date, authors, full abstract or article body, key points. Be thorough.`;
-
-        const searchResp = await fetch('https://api.anthropic.com/v1/messages', {
-          method:'POST',
-          headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-dangerous-direct-browser-access':'true'},
-          body: JSON.stringify({
-            model:'claude-sonnet-4-20250514', max_tokens:1500,
-            tools:[{ type:'web_search_20250305', name:'web_search' }],
-            messages:[{ role:'user', content: searchPrompt }]
-          })
-        });
-        const searchData = await searchResp.json();
-        contentForExtraction = (searchData.content||[])
-          .filter(b=>b.type==='text').map(b=>b.text).join('');
-        if (!contentForExtraction.trim()) {
-          contentForExtraction = `URL: ${cleanSeed}\nTitle hint from URL slug: ${slugAsTitle}\nDomain: ${domain}`;
-        }
-      } else {
-        contentForExtraction = cleanSeed;
-      }
-
-      // ── Call 2: Extract structured JSON from content (no tools, with prefill) ──
-      const extractPrompt = isUrl
-        ? `Based on the following content retrieved about "${cleanSeed}", extract structured fields.\n\nContent:\n${contentForExtraction}\n\nReturn structured data as JSON.`
-        : `Parse this pasted regulatory or financial news content:\n\n${contentForExtraction}\n\nReturn structured data as JSON.`;
-
-      const schema = `{"date":"YYYY-MM-DD","source":"publishing organization name","sourceType":"Press Release or News Article or Blog or Newsletter or Advisory or Speech or Report","title":"title (max 15 words)","summary":"2-3 sentence plain-English summary","detail":"3-5 sentence context including significance and next steps","sector":"Housing / Mortgage or Crypto / Digital or Insurance or Banking / Prudential or Consumer Protection or Securities or Monetary Policy or Cross-Sector","significance":"Low or Medium or High","url":"${isUrl ? cleanSeed : ''}"}`;
-
-      const extractResp = await fetch('https://api.anthropic.com/v1/messages', {
+      const resp = await fetch('https://api.anthropic.com/v1/messages', {
         method:'POST',
         headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-dangerous-direct-browser-access':'true'},
         body: JSON.stringify({
-          model:'claude-sonnet-4-20250514', max_tokens:800,
-          messages:[
-            { role:'user', content:`${extractPrompt}\n\nRespond with ONLY a JSON object matching this schema exactly — no markdown, no preamble:\n${schema}` },
-            { role:'assistant', content:'{' }
-          ]
+          model:'claude-sonnet-4-20250514', max_tokens:1500,
+          tools: isUrl ? [{ type:'web_search_20250305', name:'web_search' }] : [],
+          messages:[{ role:'user', content: prompt }]
         })
       });
-      const extractData = await extractResp.json();
-      const rawText = '{' + ((extractData.content||[]).filter(b=>b.type==='text').map(b=>b.text).join(''));
-      const m = rawText.match(/\{[\s\S]*?\}(?=\s*$)/) || rawText.match(/\{[\s\S]*\}/);
+      const data = await resp.json();
+      const text = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+      // Strip markdown fences, use greedy match (same as doFetchEntry)
+      const cleaned = text.replace(/```json\s*/gi,'').replace(/```\s*/g,'');
+      const m = cleaned.match(/\{[\s\S]*\}/);
       let raw = null;
-      if (m) {
-        try { raw = JSON.parse(m[0]); } catch(e) { raw = null; }
-      }
-      // Always advance to step 3 — with extracted data or empty draft for manual fill
+      if (m) { try { raw = JSON.parse(m[0]); } catch(e) { raw = null; } }
+
+      // Always advance to step 3 — filled or blank for manual entry
       setAddSigDraft({
         date: raw?.date || new Date().toISOString().slice(0,10),
         source: raw?.source || '',
-        sourceType: raw?.sourceType || 'News Article',
+        sourceType: raw?.sourceType || (isUrl ? 'News Article' : 'Press Release'),
         title: raw?.title || '',
         summary: raw?.summary || '',
         detail: raw?.detail || '',
         sector: raw?.sector || 'Cross-Sector',
         significance: raw?.significance || 'Medium',
         url: raw?.url || (isUrl ? cleanSeed : ''),
-        notes: '',
-        isNew: true,
+        notes: '', isNew: true,
       });
-      if (!raw) {
-        setAddSigError('Could not auto-extract all fields — please fill in the form below.');
-      }
+      if (!raw) setAddSigError('Could not auto-extract — please fill in the form below.');
       setAddSigStep(3);
     } catch(err) {
       setAddSigError(`Error: ${err.message}`);
