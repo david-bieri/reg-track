@@ -946,11 +946,17 @@ const AddSignalModal = ({ step, seed, onSeedChange, onFetch, onManual, draft, on
                 placeholder={'URL:  https://home.treasury.gov/news/press-releases/…\n\nOR paste raw text:\n\nPress Release:  April 1, 2026\nContact: Treasury Public Affairs…'}
                 rows={6} style={{width:'100%',marginBottom:8,resize:'vertical',fontFamily:'inherit'}}
                 autoFocus />
-              {seed.trim() && (
-                <div style={{fontSize:10,color:'var(--text-muted)',marginBottom:8}}>
-                  Detected: <strong>{isUrl ? 'URL — will fetch page content' : 'Raw text — will parse structure'}</strong>
-                </div>
-              )}
+              {seed.trim() && (() => {
+                const cls = classifyUrl(seed.trim().replace(/\?+$/,''));
+                const hints = {
+                  url: {color:'var(--green-text)',bg:'var(--green-bg)',msg:'URL — will search for indexed content'},
+                  paywall: {color:'var(--amber-text)',bg:'var(--amber-bg)',msg:'Paywalled URL — extraction may be partial; paste article text for best results'},
+                  unindexable: {color:'var(--red-text)',bg:'var(--red-bg)',msg:'⚠ Newsletter delivery URL — not searchable. Paste the newsletter text into this box instead.'},
+                  text: {color:'var(--text-muted)',bg:'var(--gray-bg)',msg:'Raw text — will parse structure directly'},
+                };
+                const h = hints[cls];
+                return <div style={{fontSize:11,padding:'5px 9px',borderRadius:4,marginBottom:8,backgroundColor:h.bg,color:h.color}}>{h.msg}</div>;
+              })()}
               {error && <div style={{fontSize:11,color:'var(--red)',marginBottom:8}}>{error}</div>}
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
                 <button onClick={onManual} style={{fontSize:11,color:'var(--text-muted)',background:'none',
@@ -1396,6 +1402,47 @@ function clearApiKey() {
   try { localStorage.removeItem(API_KEY_STORE); } catch(e) {}
 }
 
+/* ── URL helpers ───────────────────────────────── */
+const UNINDEXABLE_HOSTS = [
+  'govdelivery.com','content.govdelivery.com',
+  'mailchi.mp','list-manage.com','us*.list-manage.com',
+  'substack.com/email','buttondown.email',
+  'campaign-archive.com','mailerlite.com',
+];
+const PAYWALL_HOSTS = [
+  'americanbanker.com','wsj.com','ft.com',
+  'bloomberg.com','reuters.com/plus',
+];
+
+function classifyUrl(url) {
+  if (!url.startsWith('http')) return 'text';
+  try {
+    const host = new URL(url).hostname.replace(/^www\./,'');
+    if (UNINDEXABLE_HOSTS.some(h => host.includes(h.replace(/\*/,'')))) return 'unindexable';
+    if (PAYWALL_HOSTS.some(h => host.includes(h))) return 'paywall';
+    return 'url';
+  } catch(e) { return 'text'; }
+}
+
+/* ── Robust JSON extractor ─────────────────────── */
+function extractJson(text) {
+  // Strip markdown fences
+  const s = text.replace(/```json\s*/gi,'').replace(/```\s*/g,'');
+  // Find all {...} candidates, try parsing each, return first valid
+  const matches = [...s.matchAll(/\{[\s\S]*?\}/g), ...s.matchAll(/\{[\s\S]*\}/g)];
+  for (const m of matches) {
+    try { return JSON.parse(m[0]); } catch(e) { continue; }
+  }
+  return null;
+}
+
+function extractJsonArray(text) {
+  const s = text.replace(/```json\s*/gi,'').replace(/```\s*/g,'');
+  const m = s.match(/\[[\s\S]*\]/);
+  if (m) { try { return JSON.parse(m[0]); } catch(e) {} }
+  return null;
+}
+
 /* ── app ───────────────────────────────────────── */
 const App = () => {
   const [activeTab, setActiveTab] = React.useState('bills');
@@ -1492,13 +1539,13 @@ const App = () => {
   /* Anthropic API refresh */
   const doRefresh = async () => {
     setRefreshing(true);
-    setLog(`Searching for latest ${activeTab === 'bills'
-      ? 'bill' : 'regulatory'} updates...`);
+    const today = new Date().toISOString().slice(0,10);
 
     const prompt = activeTab === 'bills'
-      ? `Search for the very latest news today on US Congressional prediction market legislation. Currently tracking: ${bills.map(b => `[${b.id}] "${b.title}"`).join(', ')}. Find: (1) any new bills introduced, (2) status changes on existing bills (e.g. advanced to committee). Respond ONLY with compact valid JSON — no markdown, no backticks, no preamble: {"updates":[{"id":"S.1234","status":"Committee","notes":"Advanced to Senate Ag Committee"}],"newBills":[{"introduced":"2026-04-01","title":"...","id":"S.9999","chamber":"Senate","party":"R","sponsor":"...","category":"Prediction Markets","summary":"one clear sentence","teeth":"key enforcement detail","detail":"full text","status":"Introduced"}],"summary":"2-3 sentences on what changed today."}`
-      : `Search for the very latest financial regulatory actions today from CFTC, Fed, DOJ, SEC, Treasury, OCC, FDIC, or FinCEN. Currently tracking: ${timeline.map(e => `[${e.id}] "${e.title}"`).join(', ')}. Find: any new agency actions, enforcement cases, research papers, litigation, or speeches since the last entry. Respond ONLY with compact valid JSON — no markdown, no backticks: {"newEntries":[{"date":"2026-04-01","agency":"CFTC","action":"Guidance","domain":"prediction-markets or crypto or monetary-policy or fintech or financial-stability","title":"...","detail":"2-3 sentences","url":"canonical source URL or empty string"}],"summary":"2-3 sentences on what is new."}`;
+      ? `Search for US Congressional prediction market legislation news from the past 7 days (today is ${today}). Find any new bills introduced or status changes.\n\nReturn ONLY a JSON array — no markdown, no backticks, no prose:\n[{"introduced":"YYYY-MM-DD","id":"S.XXXX","title":"...","chamber":"Senate","party":"R","sponsor":"Name (R-ST)","category":"Prediction Markets","summary":"one sentence","teeth":"enforcement detail","detail":"2-3 sentences","status":"Introduced","domain":"prediction-markets","notes":""}]\n\nReturn [] if nothing new found.`
+      : `Search for US financial regulatory actions from the past 7 days (today is ${today}). Look for actions from CFTC, Fed, SEC, OCC, FDIC, DOJ, Treasury, FinCEN.\n\nReturn ONLY a JSON array — no markdown, no backticks, no prose:\n[{"date":"YYYY-MM-DD","agency":"CFTC","action":"Guidance","domain":"prediction-markets","title":"short title","detail":"2-3 sentences","url":""}]\n\nagency: CFTC|Fed|SEC|OCC|FDIC|DOJ|Treasury|FinCEN\naction: Final Rule|Proposed Rule|Guidance|Enforcement|Staff Letter|Research|Inquiry|No-Action Letter\ndomain: prediction-markets|crypto|monetary-policy|fintech|financial-stability\n\nReturn [] if nothing new found.`;
 
+    setLog(`Searching for latest ${activeTab === 'bills' ? 'bill' : 'regulatory'} updates...`);
     try {
       const key = getApiKey();
       if (!key) { setLog('API key required — open About panel to add your key.'); setRefreshing(false); return; }
@@ -1513,57 +1560,32 @@ const App = () => {
         })
       });
       const data = await resp.json();
-      const text = (data.content || [])
-        .filter(b => b.type === 'text').map(b => b.text).join('');
-      const m = text.match(/\{[\s\S]*\}/);
-      if (m) {
-        const result = JSON.parse(m[0]);
-        if (activeTab === 'bills') {
-          setBills(prev => {
-            let next = [...prev];
-            if (result.updates?.length) {
-              next = next.map(b => {
-                const u = result.updates.find(u => u.id === b.id);
-                return u ? {
-                  ...b,
-                  status: u.status || b.status,
-                  notes: u.notes
-                    ? (b.notes ? b.notes + ' | ' + u.notes : u.notes)
-                    : b.notes
-                } : b;
-              });
-            }
-            if (result.newBills?.length) {
-              const fresh = result.newBills.map((nb, i) => ({
-                ...nb,
-                id: nb.id || `NEW-${Date.now()}-${i}`,
-                isNew: true
-              }));
-              next = [...fresh, ...next];
-            }
-            saveToStorage(next, timeline);
-            return next;
-          });
-        } else {
-          if (result.newEntries?.length) {
-            setTimeline(prev => {
-              const maxId = Math.max(
-                ...prev.map(e => parseInt(e.id.replace('tl-','')) || 0));
-              const fresh = result.newEntries.map((ne, i) => ({
-                ...ne,
-                id: `tl-${maxId + i + 1}`,
-                isNew: true,
-                notes: ''
-              }));
-              const next = [...fresh, ...prev];
-              saveToStorage(bills, next);
-              return next;
-            });
-          }
-        }
-        setLog(result.summary || 'Search complete.');
+      const text = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+      const items = extractJsonArray(text);
+
+      if (activeTab === 'bills' && items?.length) {
+        setBills(prev => {
+          const existingIds = new Set(prev.map(b => b.id));
+          const fresh = items
+            .filter(nb => nb.id && !existingIds.has(nb.id))
+            .map((nb, i) => ({ ...nb, id: nb.id || `NEW-${Date.now()}-${i}`, isNew: true }));
+          if (!fresh.length) return prev;
+          const next = [...fresh, ...prev];
+          saveToStorage(next, timeline);
+          return next;
+        });
+        setLog(`Found ${items.length} item(s). ${items.length} added to bills.`);
+      } else if (activeTab === 'timeline' && items?.length) {
+        setTimeline(prev => {
+          const maxId = Math.max(...prev.map(e => parseInt(e.id.replace('tl-','')) || 0));
+          const fresh = items.map((ne, i) => ({ ...ne, id: `tl-${maxId + i + 1}`, isNew: true, notes: '' }));
+          const next = [...fresh, ...prev];
+          saveToStorage(bills, next);
+          return next;
+        });
+        setLog(`Found and added ${items.length} new regulatory item(s).`);
       } else {
-        setLog('Search complete — no structured changes found.');
+        setLog('Search complete — no new items found for the past 7 days.');
       }
     } catch (err) {
       setLog(`Refresh error: ${err.message}`);
@@ -1592,11 +1614,9 @@ const App = () => {
         })
       });
       const data = await resp.json();
-      const text = (data.content || [])
-        .filter(b => b.type === 'text').map(b => b.text).join('');
-      const m = text.match(/\{[\s\S]*\}/);
-      if (m) {
-        const raw = JSON.parse(m[0]);
+      const text = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+      const raw = extractJson(text);
+      if (raw) {
         setAddDraft({
           introduced: raw.introduced || raw.date || '',
           title: raw.title || raw.name || '',
@@ -1667,11 +1687,9 @@ const App = () => {
         })
       });
       const data = await resp.json();
-      const text = (data.content || [])
-        .filter(b => b.type === 'text').map(b => b.text).join('');
-      const m = text.match(/\{[\s\S]*\}/);
-      if (m) {
-        const raw = JSON.parse(m[0]);
+      const text = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+      const raw = extractJson(text);
+      if (raw) {
         setAddEntryDraft({
           date:   raw.date   || '',
           agency: raw.agency || 'Treasury',
@@ -1747,20 +1765,28 @@ const App = () => {
     } catch(e) {}
   }, []);
 
-  /* Add Signal — single call, mirrors doFetchEntry pattern */
+  /* Add Signal — single call with URL classification */
   const doFetchSignal = async () => {
     if (!addSigSeed.trim()) return;
+    const cleanSeed = addSigSeed.trim().replace(/\?+$/, '');
+    const urlClass = classifyUrl(cleanSeed);
+
+    // Block unindexable URLs immediately — no API call
+    if (urlClass === 'unindexable') {
+      setAddSigError('Newsletter delivery URL detected (govdelivery, Mailchimp, etc.) — these are not indexed by search engines. Please paste the newsletter text into this box instead.');
+      return;
+    }
+
     setAddSigStep(2);
     setAddSigError('');
-    const cleanSeed = addSigSeed.trim().replace(/\?+$/, '');
-    const isUrl = cleanSeed.startsWith('http');
+    const isUrl = urlClass === 'url' || urlClass === 'paywall';
     try {
       const key = getApiKey();
       if (!key) { setAddSigError('API key required — open About panel to add your key.'); setAddSigStep(1); return; }
 
       const prompt = isUrl
-        ? `Search for this URL and extract the regulatory or financial news item: "${cleanSeed}"\n\nReturn ONLY compact valid JSON — no markdown, no backticks:\n{"date":"YYYY-MM-DD","source":"publishing org name","sourceType":"Press Release","title":"title max 15 words","summary":"2-3 sentence summary","detail":"3-5 sentence detail","sector":"Banking / Prudential","significance":"Medium","url":"${cleanSeed}"}\n\nsourceType must be one of: Press Release, News Article, Blog, Newsletter, Advisory, Speech, Report\nsector must be one of: Housing / Mortgage, Crypto / Digital, Insurance, Banking / Prudential, Consumer Protection, Securities, Monetary Policy, Cross-Sector\nsignificance must be one of: Low, Medium, High\ndate must be YYYY-MM-DD format.`
-        : `Extract structured data from this pasted content:\n\n${cleanSeed}\n\nReturn ONLY compact valid JSON — no markdown, no backticks:\n{"date":"YYYY-MM-DD","source":"publishing org name","sourceType":"Press Release","title":"title max 15 words","summary":"2-3 sentence summary","detail":"3-5 sentence detail","sector":"Banking / Prudential","significance":"Medium","url":""}\n\nsourceType must be one of: Press Release, News Article, Blog, Newsletter, Advisory, Speech, Report\nsector must be one of: Housing / Mortgage, Crypto / Digital, Insurance, Banking / Prudential, Consumer Protection, Securities, Monetary Policy, Cross-Sector\nsignificance must be one of: Low, Medium, High\ndate must be YYYY-MM-DD format.`;
+        ? `Search for this URL and extract the regulatory or financial news item: "${cleanSeed}"\n\nReturn ONLY compact valid JSON — no markdown, no backticks:\n{"date":"YYYY-MM-DD","source":"publishing org name","sourceType":"Press Release","title":"title max 15 words","summary":"2-3 sentence summary","detail":"3-5 sentence detail","sector":"Banking / Prudential","significance":"Medium","url":"${cleanSeed}"}\n\nsourceType: Press Release|News Article|Blog|Newsletter|Advisory|Speech|Report\nsector: Housing / Mortgage|Crypto / Digital|Insurance|Banking / Prudential|Consumer Protection|Securities|Monetary Policy|Cross-Sector\nsignificance: Low|Medium|High`
+        : `Extract structured data from this pasted content:\n\n${cleanSeed}\n\nReturn ONLY compact valid JSON — no markdown, no backticks:\n{"date":"YYYY-MM-DD","source":"publishing org name","sourceType":"Press Release","title":"title max 15 words","summary":"2-3 sentence summary","detail":"3-5 sentence detail","sector":"Banking / Prudential","significance":"Medium","url":""}\n\nsourceType: Press Release|News Article|Blog|Newsletter|Advisory|Speech|Report\nsector: Housing / Mortgage|Crypto / Digital|Insurance|Banking / Prudential|Consumer Protection|Securities|Monetary Policy|Cross-Sector\nsignificance: Low|Medium|High`;
 
       const resp = await fetch('https://api.anthropic.com/v1/messages', {
         method:'POST',
@@ -1773,13 +1799,8 @@ const App = () => {
       });
       const data = await resp.json();
       const text = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
-      // Strip markdown fences, use greedy match (same as doFetchEntry)
-      const cleaned = text.replace(/```json\s*/gi,'').replace(/```\s*/g,'');
-      const m = cleaned.match(/\{[\s\S]*\}/);
-      let raw = null;
-      if (m) { try { raw = JSON.parse(m[0]); } catch(e) { raw = null; } }
+      const raw = extractJson(text);
 
-      // Always advance to step 3 — filled or blank for manual entry
       setAddSigDraft({
         date: raw?.date || new Date().toISOString().slice(0,10),
         source: raw?.source || '',
@@ -1792,7 +1813,11 @@ const App = () => {
         url: raw?.url || (isUrl ? cleanSeed : ''),
         notes: '', isNew: true,
       });
-      if (!raw) setAddSigError('Could not auto-extract — please fill in the form below.');
+      if (!raw) {
+        setAddSigError(urlClass === 'paywall'
+          ? 'Paywalled content — only partial data extracted. Please fill in the form below.'
+          : 'Could not auto-extract — please fill in the form below.');
+      }
       setAddSigStep(3);
     } catch(err) {
       setAddSigError(`Error: ${err.message}`);
