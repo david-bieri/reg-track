@@ -212,100 +212,93 @@ const SEED_SIGNAL = [
 
 /* ── seed data: bills ──────────────────────────── */
 const SEED_BILLS = [
-  { id:'S.1234', title:'Prediction Market Integrity Act',
-    sponsor:'Sen. Lummis (R-WY)', party:'R', chamber:'Senate',
+  { id:'H.R.7004', title:'Public Integrity in Financial Prediction Markets Act of 2026',
+    sponsor:'Rep. Torres (D-NY)', party:'D', chamber:'House',
+    category:'Prediction Markets', domain:'prediction-markets', status:'Introduced',
+    introduced:'2026-01-09',
+    summary:'Bars elected federal officials, congressional staff, political appointees, and executive agency employees from trading prediction market contracts tied to government policy, government action, or political outcomes while in possession of material nonpublic information obtainable through their official duties.',
+    teeth:'Civil penalties; CFTC enforcement authority over insider trading in event contracts.',
+    detail:'Introduced after a Polymarket user netted $400K betting on the U.S. capture of Venezuelan President Maduro in January 2026. As of April 2026 has 42 Democratic co-sponsors. Referred to House Agriculture Committee. Republicans control the committee, limiting near-term prospects.' },
+  { id:'S.4188', title:'Public Integrity in Financial Prediction Markets Act',
+    sponsor:'Sens. Slotkin (D-MI), Young (R-IN), Schiff (D-CA), Curtis (R-UT)', party:'Bipartisan', chamber:'Senate',
+    category:'Prediction Markets', domain:'prediction-markets', status:'Introduced',
+    introduced:'2026-03-27',
+    summary:'Senate companion to H.R.7004. Bipartisan bill prohibiting President, Vice President, Members of Congress, and federal employees from using material nonpublic information derived from their official positions to profit from prediction market event contracts.',
+    teeth:'Profit disgorgement; civil penalties.',
+    detail:'Led by a bipartisan quartet following Iran war insider trading concerns. Separately, California Governor Newsom issued an executive order on the same date extending similar restrictions to state officials.' },
+  { id:'S.4060', title:'Prediction Markets Security and Integrity Act of 2026',
+    sponsor:'Sens. Blumenthal (D-CT), Kim (D-NJ)', party:'D', chamber:'Senate',
     category:'Prediction Markets', domain:'prediction-markets', status:'Committee',
+    introduced:'2026-03-11',
+    summary:'Comprehensive federal framework prohibiting use of MNPI in prediction markets, banning contracts presenting conflicts of interest, and establishing consumer safeguards including segregated funds, national self-exclusion list, and protections against underage participation. Returns certain oversight authority to states.',
+    teeth:'Federal enforcement; state wagering program standards; criminal penalties for manipulation.',
+    detail:'Most comprehensive of the prediction market bills. Goes beyond insider trading to address fraud, market manipulation, consumer protection, and AI-related risks. Referred to Senate Agriculture Committee.' },
+  { id:'S.4017', title:'End Prediction Market Corruption Act',
+    sponsor:'Sens. Merkley (D-OR), Klobuchar (D-MN)', party:'D', chamber:'Senate',
+    category:'Prediction Markets', domain:'prediction-markets', status:'Introduced',
     introduced:'2026-03-05',
-    summary:'Establishes CFTC as primary regulator of event contracts on registered prediction markets. Defines lawful event contracts and prohibits binary contracts on assassination, terrorism, and election outcomes involving minors.',
-    teeth:'Civil penalties up to $1M per violation; criminal referral for manipulation.',
-    detail:'Referred to Senate Agriculture Committee. Hearing scheduled April 8, 2026.' },
-  { id:'H.R.2200', title:'Decentralized Prediction Market Study Act',
-    sponsor:'Rep. Emmer (R-MN)', party:'R', chamber:'House',
+    summary:'Categorically prohibits the President, Vice President, and Members of Congress from trading any event contracts. Senior executive branch officials barred from trading contracts involving matters in which they participate personally and substantially. Directs CFTC to issue rules restricting MNPI misuse.',
+    teeth:'Outright ban with no exceptions for elected officials and appointees; CFTC rulemaking mandate.',
+    detail:'Narrower in scope than S.4060 but cleaner enforcement mechanism. Does not attempt to regulate contract categories — focuses solely on participation by officials with access to nonpublic information.' },
+  { id:'H.R.7942', title:'DEATH BETS Act',
+    sponsor:'Rep. Levin (D-CA) / Sen. Schiff (D-CA)', party:'D', chamber:'House',
     category:'Prediction Markets', domain:'prediction-markets', status:'Introduced',
-    introduced:'2026-03-08',
-    summary:'Directs GAO to conduct a 12-month study on decentralized prediction markets, including Polymarket and Kalshi, evaluating systemic risk, information quality, and existing regulatory gaps.',
-    teeth:'Report due to Congress within 12 months; no direct penalty provisions.',
-    detail:'Referred to House Financial Services Committee.' },
-  { id:'S.1301', title:'Event Contract Clarity Act',
-    sponsor:'Sen. Hagerty (R-TN)', party:'R', chamber:'Senate',
-    category:'Prediction Markets', domain:'prediction-markets', status:'Committee',
     introduced:'2026-03-10',
-    summary:'Amends the Commodity Exchange Act to clarify that event contracts on economic indicators (CPI, NFP, GDP) are lawful commodity interests eligible for clearing on DCMs.',
-    teeth:'Safe harbor for compliant DCMs; sunset clause at 5 years.',
-    detail:'Co-sponsored by Sen. Tillis (R-NC). Markup tentatively scheduled May 2026.' },
-  { id:'H.R.2350', title:'Election Betting Prohibition Act',
-    sponsor:'Rep. Sherman (D-CA)', party:'D', chamber:'House',
+    summary:'Explicitly prohibits any CFTC-registered entity from listing event contracts that involve, relate to, or reference terrorism, assassination, war, or an individual\'s death. Removes CFTC discretion over such contracts by writing the prohibition directly into statute.',
+    teeth:'Statutory prohibition overriding CFTC discretion; applies to all registered exchanges.',
+    detail:'Introduced after Kalshi listed a contract on Iranian Supreme Leader Khamenei being "out" ($54M volume before paused) and contracts on the U.S.-Israel strikes on Iran. Senate version led by Schiff. Puts Schiff on collision course with CFTC Chair Selig\'s deregulatory agenda.' },
+  { id:'H.R.7955 / S.4115', title:'BETS OFF Act',
+    sponsor:'Rep. Casar (D-TX), Sen. Murphy (D-CT)', party:'D', chamber:'Joint',
     category:'Prediction Markets', domain:'prediction-markets', status:'Introduced',
-    introduced:'2026-03-12',
-    summary:'Prohibits any CFTC-regulated exchange from listing event contracts whose payoff depends on the outcome of any federal, state, or local election.',
-    teeth:'$500K fine per contract listed; exchange license suspension.',
-    detail:'Referred to House Agriculture Committee and House Financial Services Committee.' },
-  { id:'S.1400', title:'CFTC Prediction Market Oversight Funding Act',
-    sponsor:'Sen. Boozman (R-AR)', party:'R', chamber:'Senate',
-    category:'Prediction Markets', domain:'prediction-markets', status:'Floor Vote',
-    introduced:'2026-03-15',
-    summary:'Appropriates $30M to the CFTC for FY2027 specifically earmarked for supervision and examination of designated contract markets listing event contracts.',
-    teeth:'Annual GAO audit of CFTC spending on prediction market oversight.',
-    detail:'Passed Senate Agriculture Committee 14-8. Floor vote expected week of April 14.' },
-  { id:'H.R.2500', title:'State Prediction Market Compact Act',
-    sponsor:'Rep. Hill (R-AR)', party:'Bipartisan', chamber:'House',
+    introduced:'2026-03-17',
+    summary:'Bans wagering on government actions, terrorism, war, assassination, and any event where the bettor knows or controls the outcome. Also amends illegal gambling laws to shut down payment systems to illegal offshore prediction platforms and impose criminal penalties on U.S.-based operators.',
+    teeth:'Criminal penalties for U.S.-based operators of illegal offshore platforms; payment processor cutoffs.',
+    detail:'H.R.7955 introduced by Casar; S.4115 by Murphy and Hickenlooper (D-CO). Broader than pure insider trading bills — targets the event categories themselves. Applies even where no government official is involved if the bettor has advance knowledge or control of the outcome.' },
+  { id:'H.R.8076', title:'PREDICT Act',
+    sponsor:'Rep. Budzinski (D-IL), Rep. Smith (R-NE)', party:'Bipartisan', chamber:'House',
     category:'Prediction Markets', domain:'prediction-markets', status:'Introduced',
-    introduced:'2026-03-18',
-    summary:'Authorizes states to form interstate compacts for regulating prediction markets that operate below the federal threshold ($25M annual volume), preserving CFTC authority above that level.',
-    teeth:'Federal preemption for markets above threshold; state AG enforcement below.',
-    detail:'Bipartisan bill with Rep. Torres (D-NY) as original co-sponsor.' },
-  { id:'S.1500', title:'Prediction Market Consumer Protection Act',
-    sponsor:'Sen. Warren (D-MA)', party:'D', chamber:'Senate',
+    introduced:'2026-03-25',
+    summary:'Bipartisan bill barring Members of Congress, their spouses and dependent children, the President, Vice President, and certain political appointees from trading prediction market contracts involving political events, policy decisions, and government actions.',
+    teeth:'Civil penalty equal to 10% of prohibited transaction value; full profit disgorgement to U.S. Treasury.',
+    detail:'Referred to House Committees on Oversight and Government Reform, House Administration, and the Judiciary. Similar in scope to H.R.7004 but bipartisan sponsorship. Extends restrictions to family members of covered officials.' },
+  { id:'S.4160', title:'Prediction Markets Are Gambling Act',
+    sponsor:'Sens. Schiff (D-CA), Curtis (R-UT)', party:'Bipartisan', chamber:'Senate',
     category:'Prediction Markets', domain:'prediction-markets', status:'Committee',
-    introduced:'2026-03-22',
-    summary:'Requires prediction market exchanges to maintain a segregated customer fund, disclose resolution sources, and file quarterly risk reports with the CFTC.',
-    teeth:'Treble damages in private right of action for customer fund shortfalls.',
-    detail:'Referred to Senate Banking Committee. Warren seeks joint jurisdiction with Agriculture.' },
-  { id:'H.R.2650', title:'Forecasting Transparency in Government Act',
-    sponsor:'Rep. Auchincloss (D-MA)', party:'D', chamber:'House',
+    introduced:'2026-03-23',
+    summary:'Bipartisan bill amending the Commodity Exchange Act to bar CFTC-registered entities from listing any prediction contract that closely resembles a sports bet or casino-style game. Targets the broader expansion of prediction markets into entertainment and sports wagering.',
+    teeth:'CEA amendment; CFTC enforcement against noncompliant exchanges.',
+    detail:'Referred to Senate Agriculture, Nutrition, and Forestry Committee. Co-sponsored by Sen. Cortez Masto (D-NV). Bipartisan pairing of Schiff (D) and Curtis (R) is notable — Curtis had previously been supportive of prediction markets. Super Bowl 2026 trading volume on prediction markets exceeded $1 billion.' },
+  { id:'S.—', title:'Stop Corrupt Bets Act',
+    sponsor:'Sen. Merkley (D-OR), Rep. Raskin (D-MD)', party:'D', chamber:'Joint',
     category:'Prediction Markets', domain:'prediction-markets', status:'Introduced',
     introduced:'2026-03-26',
-    summary:'Mandates that OMB publish real-time forecasting dashboards incorporating prediction market prices for key economic and policy indicators.',
-    teeth:'OMB compliance deadline 18 months after enactment; Inspector General review.',
-    detail:'Referred to House Oversight Committee. Companion to earlier Senate resolution.' },
+    summary:'Most sweeping proposal: bans event contracts on elections, most government actions across all branches, sports, and military actions. Clarifies that such markets were never intended to be permitted under the Commodity Exchange Act and directs CFTC to prevent markets lacking commercial hedging value. Returns gambling authority to states.',
+    teeth:'Sweeping statutory prohibition; CFTC enforcement mandate; state authority restored; GAO study requirement.',
+    detail:'Co-sponsored in the Senate by Warren (D-MA), Blumenthal (D-CT), Van Hollen (D-MD), and Whitehouse (D-RI). No formal S. number published as of April 9, 2026 — bill text uses "S. ll" placeholder. Goes furthest of any bill. Requires GAO study on prediction market impacts including effects on children.' },
 ];
 
 /* ── seed data: timeline ───────────────────────── */
 const SEED_TIMELINE = [
-  { id:'tl-1', date:'2026-03-04', agency:'Fed', action:'Research', domain:'prediction-markets', url:'',
-    title:'FEDS Working Paper: Price Discovery in Event Markets',
-    detail:'Board staff analyze information aggregation efficiency in CFTC-regulated prediction markets vs. traditional derivatives. Finds prediction market prices converge faster to fundamental value for binary outcomes.' },
-  { id:'tl-2', date:'2026-03-07', agency:'CFTC', action:'Guidance', domain:'prediction-markets', url:'',
-    title:'Staff Advisory on Event Contract Listing Standards',
-    detail:'CFTC Division of Market Oversight issues advisory clarifying conditions under which DCMs may self-certify new event contracts without full Commission review.' },
-  { id:'tl-3', date:'2026-03-11', agency:'SEC', action:'Staff Letter', domain:'prediction-markets', url:'',
-    title:'Staff Bulletin on Prediction Market Token Classification',
-    detail:'Division of Corporation Finance issues guidance that tokenized prediction market positions may constitute securities depending on the Howey analysis of the specific contract structure.' },
-  { id:'tl-4', date:'2026-03-13', agency:'CFTC', action:'Enforcement', domain:'prediction-markets', url:'',
-    title:'CFTC Enforcement Action: Unregistered Offshore Platform',
-    detail:'CFTC files civil complaint against offshore prediction market for offering unregistered event contracts to U.S. persons. Seeks permanent injunction and $12M in disborgement.' },
-  { id:'tl-5', date:'2026-03-17', agency:'Treasury', action:'Inquiry', domain:'prediction-markets', url:'',
-    title:'Treasury RFI on Prediction Market Tax Treatment',
-    detail:'IRS/Treasury issue Request for Information on appropriate tax treatment of prediction market gains — whether to classify as capital gains, ordinary income, or gambling winnings.' },
-  { id:'tl-6', date:'2026-03-19', agency:'OCC', action:'Guidance', domain:'prediction-markets', url:'',
-    title:'OCC Interpretive Letter: Bank Participation in Prediction Markets',
-    detail:'OCC concludes that national banks may clear and settle prediction market contracts as part of permissible banking activities, subject to risk management safeguards.' },
-  { id:'tl-7', date:'2026-03-21', agency:'CFTC', action:'Proposed Rule', domain:'prediction-markets', url:'',
-    title:'CFTC NPRM: Event Contract Margin Requirements',
-    detail:'Commission proposes minimum margin requirements for event contracts on designated contract markets. Comment period 60 days. Proposes 10% initial margin for standard binary contracts.' },
-  { id:'tl-8', date:'2026-03-24', agency:'Fed', action:'Guidance', domain:'prediction-markets', url:'', isNew:true,
-    title:'SR Letter 26-4: Supervisory Expectations for Bank Prediction Market Exposure',
-    detail:'Federal Reserve issues SR letter setting expectations for state member banks engaging in prediction market clearing, including capital charges and concentration limits.' },
-  { id:'tl-9', date:'2026-03-27', agency:'FinCEN', action:'Proposed Rule', domain:'prediction-markets', url:'', isNew:true,
-    title:'FinCEN NPRM: AML/KYC Requirements for Prediction Market Platforms',
-    detail:'FinCEN proposes to designate prediction market platforms as money services businesses, requiring full BSA/AML compliance, SAR filing, and customer identification programs.' },
-  { id:'tl-10', date:'2026-03-30', agency:'DOJ', action:'Inquiry', domain:'prediction-markets', url:'', isNew:true,
-    title:'DOJ Antitrust Inquiry: Prediction Market Concentration',
-    detail:'DOJ Antitrust Division opens preliminary inquiry into market concentration among prediction market exchanges, focusing on potential barriers to entry and data exclusivity agreements.' },
-  { id:'tl-11', date:'2026-04-01', agency:'Treasury', action:'Proposed Rule', domain:'crypto', isNew:true,
+  { id:'tl-1', date:'2026-02-25', agency:'CFTC', action:'Guidance', domain:'prediction-markets',
+    url:'https://www.cftc.gov',
+    title:'CFTC Advisory: Insider Trading on Prediction Markets',
+    detail:'CFTC issues advisory addressing insider trading on prediction markets, citing two Kalshi enforcement actions: a political candidate who traded contracts on his own candidacy, and a company employee trading on nonpublic YouTube channel data. CFTC states it has "full authority to police illegal trading practices" and that exchanges have an independent duty to conduct surveillance under CEA core principles. Agency has not yet pursued its own enforcement actions against either trader.' },
+  { id:'tl-2', date:'2026-04-02', agency:'CFTC', action:'Enforcement', domain:'prediction-markets',
+    url:'https://www.cftc.gov/PressRoom/PressReleases/9206-26',
+    title:'CFTC Sues Arizona, Connecticut, Illinois to Assert Exclusive Prediction Market Jurisdiction',
+    detail:'CFTC and DOJ file civil lawsuits in federal district courts in all three states, challenging their cease-and-desist orders against Kalshi, Polymarket, Crypto.com, and Robinhood. Arizona had additionally filed criminal charges against Kalshi. CFTC Chair Selig asserts Congress granted the agency "clear and longstanding exclusive jurisdiction" over event contracts under the CEA, making state gambling laws inapplicable. States argue the contracts are plainly unlicensed gambling. Case widely expected to reach the Supreme Court.' },
+  { id:'tl-3', date:'2026-04-07', agency:'CFTC', action:'Inquiry', domain:'prediction-markets',
+    url:'https://www.cnbc.com/2026/04/07/kalshi-polymarket-prediction-markets-cftc-war-bets.html',
+    title:'House Democrats Press CFTC on Offshore War Bet Enforcement',
+    detail:'Group of House Democrats led by Reps. Moulton and McGovern send letter to CFTC Chair Selig questioning why the agency has not acted against offshore prediction market bets on U.S. military strikes on Iran and Venezuela. Letter argues CFTC\'s existing rules under CEA apply to offshore swaps with direct and significant U.S. market effects. CFTC enforcement director Miller separately states agency will prosecute cases involving misappropriated information under existing law.' },
+  { id:'tl-4', date:'2026-04-01', agency:'Treasury', action:'Proposed Rule', domain:'crypto', isNew:true,
     url:'https://home.treasury.gov/news/press-releases/sb0428',
     title:'Treasury NPRM: GENIUS Act State-Level Regulatory Regime Principles',
-    detail:'Treasury issues its first NPRM under the GENIUS Act, establishing broad-based principles for determining whether a state-level payment stablecoin regulatory regime is substantially similar to the federal framework. Applies to issuers with consolidated outstanding issuance ≤ $10B who opt for state regulation. Public comment period: 60 days from Federal Register publication via regulations.gov. Builds on the September 2025 ANPRM.' },
+    detail:'Treasury issues its first NPRM under the GENIUS Act, establishing broad-based principles for determining whether a state-level payment stablecoin regulatory regime is "substantially similar" to the federal framework. Applies to issuers with consolidated outstanding issuance ≤ $10B who opt for state oversight. States get wide latitude on capital and liquidity but must maintain uniform standards on AML, reserves, and disclosures. Open for 60-day public comment. Builds on the September 2025 ANPRM.' },
+  { id:'tl-5', date:'2026-04-09', agency:'Treasury', action:'Guidance', domain:'fintech', isNew:true,
+    url:'',
+    title:'Treasury Launches Cybersecurity Information Sharing Initiative for Digital Asset Industry',
+    detail:'Treasury\'s OCCIP announces new initiative extending the same actionable cybersecurity threat intelligence shared with traditional financial institutions to eligible U.S. digital asset firms and industry organizations, at no cost. Initiative advances a key recommendation from the President\'s Working Group on Digital Asset Markets report. Eligible firms may contact OCCIP at OCCIP-Coord@treasury.gov. Reflects GENIUS Act principle of promoting responsible innovation grounded in strong cybersecurity.' },
 ];
 
 /* ── reusable components ───────────────────────── */
@@ -548,10 +541,10 @@ const TimelineRow = ({ entry: e, expanded, onToggle, editMode, onUpdate }) => {
                       Date: {e.date}<br/>
                       Agency: {e.agency}<br/>
                       Action: {e.action}<br/>
-                      {e.domain && (() => {
+                      {e.domain ? (() => {
                         const d = DOMAIN[e.domain] || { a:'var(--mid-gray)', bg:'var(--gray-bg)', t:'var(--text-muted)', label: e.domain };
                         return <><span>Domain: </span><Pill label={d.label} a={d.a} bg={d.bg} t={d.t} sm /></>;
-                      })()}
+                      })() : null}
                       {e.source === 'manual' && (
                         <><br/><span style={{fontSize:10,color:'var(--text-muted)',
                           fontStyle:'italic'}}>manually entered</span></>
@@ -908,7 +901,18 @@ const AddSignalModal = ({ step, seed, onSeedChange, onFetch, onManual, draft, on
     return () => document.removeEventListener('keydown', handler);
   }, [onClose]);
 
-  const isUrl = seed.trim().startsWith('http');
+  const renderClassHint = () => {
+    if (!seed.trim()) return null;
+    const cls = classifyUrl(seed.trim().replace(/\?+$/,''));
+    const hints = {
+      url:         {color:'var(--green-text)', bg:'var(--green-bg)',  msg:'URL — will search for indexed content'},
+      paywall:     {color:'var(--amber-text)', bg:'var(--amber-bg)',  msg:'Paywalled URL — extraction may be partial; paste article text for best results'},
+      unindexable: {color:'var(--red-text)',   bg:'var(--red-bg)',    msg:'⚠ Newsletter delivery URL — not searchable. Paste the newsletter text into this box instead.'},
+      text:        {color:'var(--text-muted)', bg:'var(--gray-bg)',   msg:'Raw text — will parse structure directly'},
+    };
+    const h = hints[cls] || hints.text;
+    return <div style={{fontSize:11,padding:'5px 9px',borderRadius:4,marginBottom:8,backgroundColor:h.bg,color:h.color}}>{h.msg}</div>;
+  };
 
   return (
     <div onClick={onClose} style={{
@@ -946,17 +950,7 @@ const AddSignalModal = ({ step, seed, onSeedChange, onFetch, onManual, draft, on
                 placeholder={'URL:  https://home.treasury.gov/news/press-releases/…\n\nOR paste raw text:\n\nPress Release:  April 1, 2026\nContact: Treasury Public Affairs…'}
                 rows={6} style={{width:'100%',marginBottom:8,resize:'vertical',fontFamily:'inherit'}}
                 autoFocus />
-              {seed.trim() && (() => {
-                const cls = classifyUrl(seed.trim().replace(/\?+$/,''));
-                const hints = {
-                  url: {color:'var(--green-text)',bg:'var(--green-bg)',msg:'URL — will search for indexed content'},
-                  paywall: {color:'var(--amber-text)',bg:'var(--amber-bg)',msg:'Paywalled URL — extraction may be partial; paste article text for best results'},
-                  unindexable: {color:'var(--red-text)',bg:'var(--red-bg)',msg:'⚠ Newsletter delivery URL — not searchable. Paste the newsletter text into this box instead.'},
-                  text: {color:'var(--text-muted)',bg:'var(--gray-bg)',msg:'Raw text — will parse structure directly'},
-                };
-                const h = hints[cls];
-                return <div style={{fontSize:11,padding:'5px 9px',borderRadius:4,marginBottom:8,backgroundColor:h.bg,color:h.color}}>{h.msg}</div>;
-              })()}
+              {renderClassHint()}
               {error && <div style={{fontSize:11,color:'var(--red)',marginBottom:8}}>{error}</div>}
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
                 <button onClick={onManual} style={{fontSize:11,color:'var(--text-muted)',background:'none',
@@ -1069,7 +1063,7 @@ const AddSignalModal = ({ step, seed, onSeedChange, onFetch, onManual, draft, on
 
 /* ── AddBillModal component ────────────────────── */
 const AddBillModal = ({
-  step, seed, onSeedChange, onFetch, draft, onDraftChange,
+  step, seed, onSeedChange, onFetch, onManual, draft, onDraftChange,
   onConfirm, onClose, error
 }) => {
   React.useEffect(() => {
@@ -1118,14 +1112,20 @@ const AddBillModal = ({
                 rows={3} style={{width:'100%',marginBottom:10,resize:'vertical'}}
                 autoFocus />
               {error && <div style={{fontSize:11,color:'var(--red)',marginBottom:8}}>{error}</div>}
-              <div style={{display:'flex',justifyContent:'flex-end',gap:8}}>
-                <button onClick={onClose}>Cancel</button>
-                <button onClick={onFetch} disabled={!seed.trim()}
-                  style={{backgroundColor:'var(--navy)',color:'white',
-                    border:'none',padding:'6px 16px',borderRadius:6,
-                    opacity:seed.trim()?1:0.5,cursor:seed.trim()?'pointer':'default'}}>
-                  Search ↗
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                <button onClick={onManual} style={{fontSize:11,color:'var(--text-muted)',
+                  background:'none',border:'none',cursor:'pointer',padding:0,textDecoration:'underline'}}>
+                  Enter manually instead
                 </button>
+                <div style={{display:'flex',gap:8}}>
+                  <button onClick={onClose}>Cancel</button>
+                  <button onClick={onFetch} disabled={!seed.trim()}
+                    style={{backgroundColor:'var(--navy)',color:'white',
+                      border:'none',padding:'6px 16px',borderRadius:6,
+                      opacity:seed.trim()?1:0.5,cursor:seed.trim()?'pointer':'default'}}>
+                    Search ↗
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -1436,11 +1436,27 @@ function extractJson(text) {
       j++;
     }
     if (depth === 0) {
+      const candidate = s.slice(i, j + 1);
+      // Pass 1 — direct parse
       try {
-        const parsed = JSON.parse(s.slice(i, j + 1));
-        // Reject trivially empty objects
-        if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 1) return parsed;
-      } catch(e) { continue; }
+        const p = JSON.parse(candidate);
+        if (p && typeof p === 'object' && Object.keys(p).length > 1) return p;
+      } catch(e) {}
+      // Pass 2 — remove trailing commas
+      try {
+        const p = JSON.parse(candidate.replace(/,(\s*[}\]])/g,'$1'));
+        if (p && typeof p === 'object' && Object.keys(p).length > 1) return p;
+      } catch(e) {}
+      // Pass 3 — replace unescaped " inside string values with '
+      try {
+        // Replace "value" content: any " that isn't a key/value delimiter
+        const repaired = candidate.replace(
+          /("(?:date|source|sourceType|title|summary|detail|sector|significance|url)"\s*:\s*")([^"]*?)(?="(?:\s*[,}]))/g,
+          (_, key, val) => key + val.replace(/"/g, "'")
+        );
+        const p = JSON.parse(repaired);
+        if (p && typeof p === 'object' && Object.keys(p).length > 1) return p;
+      } catch(e) {}
     }
   }
   return null;
@@ -1689,6 +1705,17 @@ const App = () => {
     setAddError('');
   };
 
+  const doManualBill = () => {
+    setAddDraft({
+      introduced: new Date().toISOString().slice(0,10),
+      title:'', id:'', chamber:'Senate', party:'D',
+      sponsor:'', domain:'prediction-markets',
+      category:'Prediction Markets', summary:'',
+      teeth:'', detail:'', status:'Introduced', notes:'', isNew:true,
+    });
+    setAddStep(3);
+  };
+
   /* Add Entry — URL fetch + confirm */
   const doFetchEntry = async () => {
     if (!addEntrySeed.trim()) return;
@@ -1808,8 +1835,8 @@ const App = () => {
       if (!key) { setAddSigError('API key required — open About panel to add your key.'); setAddSigStep(1); return; }
 
       const prompt = isUrl
-        ? `Search for this URL and extract the regulatory or financial news item: "${cleanSeed}"\n\nReturn ONLY compact valid JSON — no markdown, no backticks:\n{"date":"YYYY-MM-DD","source":"publishing org name","sourceType":"Press Release","title":"title max 15 words","summary":"2-3 sentence summary","detail":"3-5 sentence detail","sector":"Banking / Prudential","significance":"Medium","url":"${cleanSeed}"}\n\nsourceType: Press Release|News Article|Blog|Newsletter|Advisory|Speech|Report\nsector: Housing / Mortgage|Crypto / Digital|Insurance|Banking / Prudential|Consumer Protection|Securities|Monetary Policy|Cross-Sector\nsignificance: Low|Medium|High`
-        : `Extract structured data from this pasted content:\n\n${cleanSeed}\n\nReturn ONLY compact valid JSON — no markdown, no backticks:\n{"date":"YYYY-MM-DD","source":"publishing org name","sourceType":"Press Release","title":"title max 15 words","summary":"2-3 sentence summary","detail":"3-5 sentence detail","sector":"Banking / Prudential","significance":"Medium","url":""}\n\nsourceType: Press Release|News Article|Blog|Newsletter|Advisory|Speech|Report\nsector: Housing / Mortgage|Crypto / Digital|Insurance|Banking / Prudential|Consumer Protection|Securities|Monetary Policy|Cross-Sector\nsignificance: Low|Medium|High`;
+        ? `Search for this URL and extract the regulatory or financial news item: "${cleanSeed}"\n\nReturn ONLY compact valid JSON — no markdown, no backticks:\n{"date":"YYYY-MM-DD","source":"publishing org name","sourceType":"Press Release","title":"title max 15 words","summary":"2-3 sentence summary in your own words","detail":"3-5 sentence detail in your own words","sector":"Banking / Prudential","significance":"Medium","url":"${cleanSeed}"}\n\nsourceType: Press Release|News Article|Blog|Newsletter|Advisory|Speech|Report\nsector: Housing / Mortgage|Crypto / Digital|Insurance|Banking / Prudential|Consumer Protection|Securities|Monetary Policy|Cross-Sector\nsignificance: Low|Medium|High`
+        : `Extract structured fields from the regulatory content below. Write all summaries in your own words — do not copy quoted text from the source.\n\n<content>\n${cleanSeed}\n</content>\n\nReturn ONLY this JSON object with no other text, no markdown, no backticks. Use only straight ASCII double-quotes. Do not include any quotation marks within field values:\n{"date":"YYYY-MM-DD","source":"issuing organization","sourceType":"Press Release","title":"title max 15 words","summary":"2-3 sentences paraphrasing main points","detail":"3-5 sentences of context and significance","sector":"Crypto / Digital","significance":"Medium","url":""}\n\nsourceType: Press Release|News Article|Blog|Newsletter|Advisory|Speech|Report\nsector: Housing / Mortgage|Crypto / Digital|Insurance|Banking / Prudential|Consumer Protection|Securities|Monetary Policy|Cross-Sector\nsignificance: Low|Medium|High`;
 
       const resp = await fetch('https://api.anthropic.com/v1/messages', {
         method:'POST',
@@ -2000,8 +2027,25 @@ const App = () => {
                 The Bills tab follows the full legislative lifecycle from introduction through
                 enactment. The Regulatory Timeline records agency rulemakings, guidance,
                 enforcement actions, and research across CFTC, Fed, SEC, OCC, FDIC, DOJ,
-                Treasury, and FinCEN. Entries are updated via AI-assisted web search and
-                are human-reviewable in edit mode.
+                Treasury, and FinCEN. The Regulatory Signal tab accepts URLs, pasted press
+                releases, and newsletter text for AI-assisted extraction. Entries are
+                human-reviewable in edit mode.
+              </p>
+              <div style={{fontSize:10,fontWeight:600,color:'var(--text-muted)',
+                textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:6}}>
+                Bill status dots
+              </div>
+              <p style={{fontSize:12,color:'var(--text)',lineHeight:1.65,marginBottom:14}}>
+                The five dots on each bill row represent the standard U.S. legislative stages:
+                <strong> Introduced → Committee → Floor Vote → Other Chamber → Signed</strong>.
+                Filled green dots show completed stages; gray dots show stages not yet reached.
+                A solid red dot means the bill is <strong>Dead</strong> (failed, withdrawn, or superseded).
+                Most bills in this tracker are at <em>Introduced</em> — referred to committee but
+                with no scheduled hearing or markup. <em>Committee</em> means a hearing or markup
+                has occurred. <em>Floor Vote</em> means the full chamber has scheduled or taken
+                a vote. <em>Other Chamber</em> means the bill passed one chamber and moved to the
+                other. <em>Signed</em> means enacted into law. Given Republican control of both
+                chambers, all Democratic-only bills face very long odds of advancing past committee.
               </p>
               <div style={{fontSize:10,fontWeight:600,color:'var(--text-muted)',
                 textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:7}}>
@@ -2436,6 +2480,7 @@ const App = () => {
           seed={addSeed}
           onSeedChange={setAddSeed}
           onFetch={doFetchBill}
+          onManual={doManualBill}
           draft={addDraft}
           onDraftChange={(key, val) => setAddDraft(d => ({...d, [key]: val}))}
           onConfirm={doConfirmBill}
