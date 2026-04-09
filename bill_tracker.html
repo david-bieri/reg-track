@@ -1424,22 +1424,45 @@ function classifyUrl(url) {
   } catch(e) { return 'text'; }
 }
 
-/* ── Robust JSON extractor ─────────────────────── */
+/* ── Robust JSON extractor — balanced brace walker ── */
 function extractJson(text) {
-  // Strip markdown fences
   const s = text.replace(/```json\s*/gi,'').replace(/```\s*/g,'');
-  // Find all {...} candidates, try parsing each, return first valid
-  const matches = [...s.matchAll(/\{[\s\S]*?\}/g), ...s.matchAll(/\{[\s\S]*\}/g)];
-  for (const m of matches) {
-    try { return JSON.parse(m[0]); } catch(e) { continue; }
+  for (let i = 0; i < s.length; i++) {
+    if (s[i] !== '{') continue;
+    let depth = 0, j = i;
+    while (j < s.length) {
+      if (s[j] === '{') depth++;
+      else if (s[j] === '}') { depth--; if (depth === 0) break; }
+      j++;
+    }
+    if (depth === 0) {
+      try {
+        const parsed = JSON.parse(s.slice(i, j + 1));
+        // Reject trivially empty objects
+        if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 1) return parsed;
+      } catch(e) { continue; }
+    }
   }
   return null;
 }
 
 function extractJsonArray(text) {
   const s = text.replace(/```json\s*/gi,'').replace(/```\s*/g,'');
-  const m = s.match(/\[[\s\S]*\]/);
-  if (m) { try { return JSON.parse(m[0]); } catch(e) {} }
+  for (let i = 0; i < s.length; i++) {
+    if (s[i] !== '[') continue;
+    let depth = 0, j = i;
+    while (j < s.length) {
+      if (s[j] === '[') depth++;
+      else if (s[j] === ']') { depth--; if (depth === 0) break; }
+      j++;
+    }
+    if (depth === 0) {
+      try {
+        const arr = JSON.parse(s.slice(i, j + 1));
+        if (Array.isArray(arr)) return arr;
+      } catch(e) { continue; }
+    }
+  }
   return null;
 }
 
