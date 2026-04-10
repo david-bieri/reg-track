@@ -212,70 +212,124 @@ const SEED_SIGNAL = [
 
 /* ── seed data: bills ──────────────────────────── */
 const SEED_BILLS = [
-  { id:'H.R.7004', title:'Public Integrity in Financial Prediction Markets Act of 2026',
-    sponsor:'Rep. Torres (D-NY)', party:'D', chamber:'House',
-    category:'Prediction Markets', domain:'prediction-markets', status:'Introduced',
-    introduced:'2026-01-09',
-    summary:'Bars elected federal officials, congressional staff, political appointees, and executive agency employees from trading prediction market contracts tied to government policy, government action, or political outcomes while in possession of material nonpublic information obtainable through their official duties.',
+  { id:'H.R.7004',
+    title:'Public Integrity in Financial Prediction Markets Act of 2026',
+    sponsor:'Rep. Torres (D-NY)', cosponsors:'42 House Democrats incl. Pelosi, Moulton, Tlaib',
+    party:'D', chamber:'House', category:'Prediction Markets', domain:'prediction-markets',
+    status:'Introduced', introduced:'2026-01-09', committee:'House Agriculture',
+    sourceUrl:'https://www.congress.gov/bill/119th-congress/house-bill/7004',
+    regulatoryMode:['prohibition','disclosure'],
+    passageProbability:0.05, passageRationale:'House Democratic bill in Republican-controlled chamber; no bipartisan co-sponsors; Speaker unlikely to schedule floor vote.',
+    impact:3, confidence:0.95,
+    summary:'Bars elected federal officials, congressional staff, political appointees, and executive agency employees from trading prediction market contracts tied to government policy, government action, or political outcomes while in possession of MNPI.',
     teeth:'Civil penalties; CFTC enforcement authority over insider trading in event contracts.',
     detail:'Introduced after a Polymarket user netted $400K betting on the U.S. capture of Venezuelan President Maduro in January 2026. As of April 2026 has 42 Democratic co-sponsors. Referred to House Agriculture Committee. Republicans control the committee, limiting near-term prospects.' },
-  { id:'S.4188', title:'Public Integrity in Financial Prediction Markets Act',
-    sponsor:'Sens. Slotkin (D-MI), Young (R-IN), Schiff (D-CA), Curtis (R-UT)', party:'Bipartisan', chamber:'Senate',
-    category:'Prediction Markets', domain:'prediction-markets', status:'Introduced',
-    introduced:'2026-03-27',
-    summary:'Senate companion to H.R.7004. Bipartisan bill prohibiting President, Vice President, Members of Congress, and federal employees from using material nonpublic information derived from their official positions to profit from prediction market event contracts.',
-    teeth:'Profit disgorgement; civil penalties.',
-    detail:'Led by a bipartisan quartet following Iran war insider trading concerns. Separately, California Governor Newsom issued an executive order on the same date extending similar restrictions to state officials.' },
-  { id:'S.4060', title:'Prediction Markets Security and Integrity Act of 2026',
-    sponsor:'Sens. Blumenthal (D-CT), Kim (D-NJ)', party:'D', chamber:'Senate',
-    category:'Prediction Markets', domain:'prediction-markets', status:'Committee',
-    introduced:'2026-03-11',
-    summary:'Comprehensive federal framework prohibiting use of MNPI in prediction markets, banning contracts presenting conflicts of interest, and establishing consumer safeguards including segregated funds, national self-exclusion list, and protections against underage participation. Returns certain oversight authority to states.',
+
+  { id:'S.4188',
+    title:'Public Integrity in Financial Prediction Markets Act',
+    sponsor:'Sen. Slotkin (D-MI)', cosponsors:'Young (R-IN), Schiff (D-CA), Curtis (R-UT)',
+    party:'Bipartisan', chamber:'Senate', category:'Prediction Markets', domain:'prediction-markets',
+    status:'Introduced', introduced:'2026-03-25', committee:'Senate Homeland Security & Governmental Affairs',
+    sourceUrl:'https://www.govinfo.gov/app/details/BILLS-119s4188is',
+    regulatoryMode:['prohibition','disclosure'],
+    passageProbability:0.12, passageRationale:'Bipartisan sponsorship (Curtis R-UT, Young R-IN) is a genuine asset. Homeland Security committee referral may be more tractable for insider-trading framing. Still faces longshot odds in full Senate.',
+    impact:3, confidence:0.95,
+    summary:'Senate companion to H.R.7004. Prohibits President, Vice President, Members of Congress, and federal employees from using MNPI derived from official positions to profit from prediction market event contracts.',
+    teeth:'Profit disgorgement; civil penalty of $500 or twice profit earned, whichever is greater; 30-day reporting on transactions over $250.',
+    detail:'Led by bipartisan quartet following Iran war insider trading concerns. California Governor Newsom issued a parallel executive order on March 27 extending similar restrictions to state officials. Most likely Senate insider-trading bill to see movement.' },
+
+  { id:'S.4060',
+    title:'Prediction Markets Security and Integrity Act of 2026',
+    sponsor:'Sen. Blumenthal (D-CT)', cosponsors:'Kim (D-NJ)',
+    party:'D', chamber:'Senate', category:'Prediction Markets', domain:'prediction-markets',
+    status:'Committee', introduced:'2026-03-11', committee:'Senate Judiciary',
+    sourceUrl:'https://www.congress.gov/bill/119th-congress/senate-bill/4060',
+    regulatoryMode:['prohibition','licensing','disclosure'],
+    passageProbability:0.04, passageRationale:'Judiciary referral (not Agriculture) reflects gambling-law framing. Most sweeping Democratic-only bill; Republican majority unlikely to advance comprehensive regulation.',
+    impact:5, confidence:0.92,
+    summary:'Comprehensive federal framework prohibiting use of MNPI in prediction markets, banning conflict-of-interest contracts, and establishing consumer safeguards including segregated funds, national self-exclusion list, and protections against underage participation. Returns certain oversight to states.',
     teeth:'Federal enforcement; state wagering program standards; criminal penalties for manipulation.',
-    detail:'Most comprehensive of the prediction market bills. Goes beyond insider trading to address fraud, market manipulation, consumer protection, and AI-related risks. Referred to Senate Agriculture Committee.' },
-  { id:'S.4017', title:'End Prediction Market Corruption Act',
-    sponsor:'Sens. Merkley (D-OR), Klobuchar (D-MN)', party:'D', chamber:'Senate',
-    category:'Prediction Markets', domain:'prediction-markets', status:'Introduced',
-    introduced:'2026-03-05',
-    summary:'Categorically prohibits the President, Vice President, and Members of Congress from trading any event contracts. Senior executive branch officials barred from trading contracts involving matters in which they participate personally and substantially. Directs CFTC to issue rules restricting MNPI misuse.',
-    teeth:'Outright ban with no exceptions for elected officials and appointees; CFTC rulemaking mandate.',
-    detail:'Narrower in scope than S.4060 but cleaner enforcement mechanism. Does not attempt to regulate contract categories — focuses solely on participation by officials with access to nonpublic information.' },
-  { id:'H.R.7942', title:'DEATH BETS Act',
-    sponsor:'Rep. Levin (D-CA) / Sen. Schiff (D-CA)', party:'D', chamber:'House',
-    category:'Prediction Markets', domain:'prediction-markets', status:'Introduced',
-    introduced:'2026-03-10',
-    summary:'Explicitly prohibits any CFTC-registered entity from listing event contracts that involve, relate to, or reference terrorism, assassination, war, or an individual\'s death. Removes CFTC discretion over such contracts by writing the prohibition directly into statute.',
+    detail:'Referred to Senate Judiciary (not Agriculture) because Blumenthal framed it as consumer protection/gambling legislation rather than derivatives regulation. Goes beyond insider trading to address fraud, market manipulation, AI-related risks, and minors. Most comprehensive bill in the field.' },
+
+  { id:'S.4017',
+    title:'End Prediction Market Corruption Act',
+    sponsor:'Sen. Merkley (D-OR)', cosponsors:'Klobuchar (D-MN)',
+    party:'D', chamber:'Senate', category:'Prediction Markets', domain:'prediction-markets',
+    status:'Introduced', introduced:'2026-03-05', committee:'Senate Agriculture, Nutrition & Forestry',
+    sourceUrl:'https://www.congress.gov/bill/119th-congress/senate-bill/4017',
+    regulatoryMode:['prohibition'],
+    passageProbability:0.05, passageRationale:'Clean, narrow prohibition focused on elected officials only. Cleaner enforcement mechanism than broader bills, but partisan sponsorship limits floor prospects.',
+    impact:3, confidence:0.93,
+    summary:'Categorically prohibits the President, Vice President, and Members of Congress from trading any event contracts. Senior executive branch officials barred from trading contracts involving matters in which they participate personally and substantially.',
+    teeth:'Categorical ban with no exceptions for elected officials; CFTC rulemaking mandate.',
+    detail:'Narrower in scope than S.4060 but cleaner enforcement mechanism. Does not regulate contract categories — focuses on participation by officials with access to nonpublic information. Merkley is also lead sponsor of the broader Stop Corrupt Bets Act.' },
+
+  { id:'H.R.7942',
+    title:'DEATH BETS Act',
+    sponsor:'Rep. Levin (D-CA)', cosponsors:'Sen. Schiff (D-CA) leads Senate companion',
+    party:'D', chamber:'House', category:'Prediction Markets', domain:'prediction-markets',
+    status:'Introduced', introduced:'2026-03-10', committee:'House Agriculture',
+    sourceUrl:'https://levin.house.gov/media/press-releases/rep-mike-levin-introduces-death-bets-act-to-ban-death-and-war-prediction-contracts',
+    regulatoryMode:['prohibition'],
+    passageProbability:0.07, passageRationale:'Narrowly targeted at war/death/assassination contracts. Bipartisan sympathy possible on national security grounds. Kalshi has already voluntarily removed such contracts, which may reduce urgency but also validates the concern.',
+    impact:3, confidence:0.94,
+    summary:'Explicitly prohibits any CFTC-registered entity from listing event contracts involving terrorism, assassination, war, or an individual\'s death. Removes CFTC discretion by writing the prohibition directly into statute.',
     teeth:'Statutory prohibition overriding CFTC discretion; applies to all registered exchanges.',
-    detail:'Introduced after Kalshi listed a contract on Iranian Supreme Leader Khamenei being "out" ($54M volume before paused) and contracts on the U.S.-Israel strikes on Iran. Senate version led by Schiff. Puts Schiff on collision course with CFTC Chair Selig\'s deregulatory agenda.' },
-  { id:'H.R.7955 / S.4115', title:'BETS OFF Act',
-    sponsor:'Rep. Casar (D-TX), Sen. Murphy (D-CT)', party:'D', chamber:'Joint',
-    category:'Prediction Markets', domain:'prediction-markets', status:'Introduced',
-    introduced:'2026-03-17',
-    summary:'Bans wagering on government actions, terrorism, war, assassination, and any event where the bettor knows or controls the outcome. Also amends illegal gambling laws to shut down payment systems to illegal offshore prediction platforms and impose criminal penalties on U.S.-based operators.',
+    detail:'Introduced after Kalshi listed a contract on Iranian Supreme Leader Khamenei being "out" ($54M volume before paused) and contracts on the U.S.-Israel strikes on Iran. Puts Schiff on collision course with CFTC Chair Selig\'s deregulatory agenda. Kalshi has since removed such contracts voluntarily.' },
+
+  { id:'H.R.7955 / S.4115',
+    title:'BETS OFF Act',
+    sponsor:'Rep. Casar (D-TX)', cosponsors:'Sen. Murphy (D-CT), Hickenlooper (D-CO), Reps. Amo, Ansari, Tlaib',
+    party:'D', chamber:'Joint', category:'Prediction Markets', domain:'prediction-markets',
+    status:'Introduced', introduced:'2026-03-17', committee:'House Judiciary / Agriculture / Financial Services; Senate Judiciary',
+    sourceUrl:'https://www.congress.gov/bill/119th-congress/house-bill/7955',
+    regulatoryMode:['prohibition','enforcement'],
+    passageProbability:0.04, passageRationale:'Multi-committee referral is procedurally complex. Broad scope (sports, war, government actions) gives opponents many attack surfaces. Criminal penalties for offshore platforms face jurisdictional challenges.',
+    impact:4, confidence:0.93,
+    summary:'Bans wagering on government actions, terrorism, war, assassination, and events where the bettor knows or controls the outcome. Amends illegal gambling laws to shut down payment systems to offshore platforms and impose criminal penalties on U.S.-based operators.',
     teeth:'Criminal penalties for U.S.-based operators of illegal offshore platforms; payment processor cutoffs.',
-    detail:'H.R.7955 introduced by Casar; S.4115 by Murphy and Hickenlooper (D-CO). Broader than pure insider trading bills — targets the event categories themselves. Applies even where no government official is involved if the bettor has advance knowledge or control of the outcome.' },
-  { id:'H.R.8076', title:'PREDICT Act',
-    sponsor:'Rep. Budzinski (D-IL), Rep. Smith (R-NE)', party:'Bipartisan', chamber:'House',
-    category:'Prediction Markets', domain:'prediction-markets', status:'Introduced',
-    introduced:'2026-03-25',
-    summary:'Bipartisan bill barring Members of Congress, their spouses and dependent children, the President, Vice President, and certain political appointees from trading prediction market contracts involving political events, policy decisions, and government actions.',
+    detail:'H.R.7955 (House) and S.4115 (Senate) introduced simultaneously. Targets both onshore CFTC-regulated and offshore platforms. Applies even where no government official is involved if bettor has advance knowledge or control of the outcome.' },
+
+  { id:'H.R.8076',
+    title:'PREDICT Act',
+    sponsor:'Rep. Budzinski (D-IL)', cosponsors:'Smith (R-NE), Magaziner (D-RI), Wied (R-WI)',
+    party:'Bipartisan', chamber:'House', category:'Prediction Markets', domain:'prediction-markets',
+    status:'Introduced', introduced:'2026-03-25', committee:'House Oversight & Government Reform; Administration; Judiciary',
+    sourceUrl:'https://www.congress.gov/bill/119th-congress/house-bill/8076',
+    regulatoryMode:['prohibition','disclosure'],
+    passageProbability:0.14, passageRationale:'Strongest near-term prospects: bipartisan House bill, clean scope (Congress + appointees + families), 10% civil penalty is concrete. Oversight Committee referral may be more tractable than Agriculture. Republican Smith sponsorship is meaningful signal.',
+    impact:3, confidence:0.95,
+    summary:'Bipartisan bill barring Members of Congress, spouses, dependent children, the President, Vice President, and political appointees from trading prediction market contracts on political events, policy decisions, and government actions.',
     teeth:'Civil penalty equal to 10% of prohibited transaction value; full profit disgorgement to U.S. Treasury.',
-    detail:'Referred to House Committees on Oversight and Government Reform, House Administration, and the Judiciary. Similar in scope to H.R.7004 but bipartisan sponsorship. Extends restrictions to family members of covered officials.' },
-  { id:'S.4160', title:'Prediction Markets Are Gambling Act',
-    sponsor:'Sens. Schiff (D-CA), Curtis (R-UT)', party:'Bipartisan', chamber:'Senate',
-    category:'Prediction Markets', domain:'prediction-markets', status:'Committee',
-    introduced:'2026-03-23',
-    summary:'Bipartisan bill amending the Commodity Exchange Act to bar CFTC-registered entities from listing any prediction contract that closely resembles a sports bet or casino-style game. Targets the broader expansion of prediction markets into entertainment and sports wagering.',
+    detail:'Referred to House Committees on Oversight, House Administration, and Judiciary. Extends restrictions to family members. Civil penalty of 10% plus disgorgement. Most likely of the prediction market bills to eventually advance given bipartisan support and clean scope.' },
+
+  { id:'S.4160',
+    title:'Prediction Markets Are Gambling Act',
+    sponsor:'Sen. Schiff (D-CA)', cosponsors:'Curtis (R-UT), Cortez Masto (D-NV)',
+    party:'Bipartisan', chamber:'Senate', category:'Prediction Markets', domain:'prediction-markets',
+    status:'Committee', introduced:'2026-03-23', committee:'Senate Agriculture, Nutrition & Forestry',
+    sourceUrl:'https://www.congress.gov/bill/119th-congress/senate-bill/4160',
+    regulatoryMode:['prohibition'],
+    passageProbability:0.09, passageRationale:'Bipartisan (Schiff D + Curtis R) but narrow scope: sports and casino-style contracts only. Tribal gaming industry strongly supports. CFTC Chair Selig has stated intent to defend sports contracts. Agriculture committee referral is right venue but Republican majority is obstacle.',
+    impact:3, confidence:0.95,
+    summary:'Amends the Commodity Exchange Act to bar CFTC-registered entities from listing prediction contracts that closely resemble sports bets or casino-style games. Reinforces Congressional intent that the CEA does not permit sports gambling.',
     teeth:'CEA amendment; CFTC enforcement against noncompliant exchanges.',
-    detail:'Referred to Senate Agriculture, Nutrition, and Forestry Committee. Co-sponsored by Sen. Cortez Masto (D-NV). Bipartisan pairing of Schiff (D) and Curtis (R) is notable — Curtis had previously been supportive of prediction markets. Super Bowl 2026 trading volume on prediction markets exceeded $1 billion.' },
-  { id:'S.—', title:'Stop Corrupt Bets Act',
-    sponsor:'Sen. Merkley (D-OR), Rep. Raskin (D-MD)', party:'D', chamber:'Joint',
-    category:'Prediction Markets', domain:'prediction-markets', status:'Introduced',
-    introduced:'2026-03-26',
-    summary:'Most sweeping proposal: bans event contracts on elections, most government actions across all branches, sports, and military actions. Clarifies that such markets were never intended to be permitted under the Commodity Exchange Act and directs CFTC to prevent markets lacking commercial hedging value. Returns gambling authority to states.',
-    teeth:'Sweeping statutory prohibition; CFTC enforcement mandate; state authority restored; GAO study requirement.',
-    detail:'Co-sponsored in the Senate by Warren (D-MA), Blumenthal (D-CT), Van Hollen (D-MD), and Whitehouse (D-RI). No formal S. number published as of April 9, 2026 — bill text uses "S. ll" placeholder. Goes furthest of any bill. Requires GAO study on prediction market impacts including effects on children.' },
+    detail:'Referred to Senate Agriculture Committee. Cortez Masto co-sponsorship reflects strong tribal gaming interest. Curtis had previously been supportive of prediction markets — his co-sponsorship signals real Republican openness to some restrictions. Super Bowl 2026 trading volume on prediction markets exceeded $1 billion.' },
+
+  { id:'S.—',
+    title:'Stop Corrupt Bets Act',
+    sponsor:'Sen. Merkley (D-OR)', cosponsors:'Rep. Raskin (D-MD); Senators Warren, Blumenthal, Van Hollen, Whitehouse',
+    party:'D', chamber:'Joint', category:'Prediction Markets', domain:'prediction-markets',
+    status:'Introduced', introduced:'2026-03-26', committee:'Pending formal referral (no S. number yet)',
+    sourceUrl:'https://www.merkley.senate.gov/new-merkley-raskin-legislation-bans-gambling-on-elections-sports-war-and-government-activity',
+    regulatoryMode:['prohibition','enforcement'],
+    passageProbability:0.03, passageRationale:'Most sweeping bill: would end most prediction markets as currently operating. Zero Republican co-sponsors. High rhetorical value for Democratic messaging; near-zero enactment probability in current Congress.',
+    impact:5, confidence:0.90,
+    summary:'Most sweeping proposal: bans event contracts on elections, government actions across all branches, sports, and military actions. Clarifies CEA never authorized these markets. Directs CFTC to prevent markets lacking commercial hedging value. Returns gambling authority to states.',
+    teeth:'Sweeping statutory prohibition; CFTC enforcement mandate; state authority restored; GAO study.',
+    detail:'Formally introduced March 26, 2026 — does not yet have a formal Senate bill number (filed as "S. ll"). Senate co-sponsors: Warren (MA), Blumenthal (CT), Van Hollen (MD), Whitehouse (RI). Supported by Public Citizen, CREW, POGO, Americans for Financial Reform.' },
 ];
+
 
 /* ── seed data: timeline ───────────────────────── */
 const SEED_TIMELINE = [
@@ -338,12 +392,46 @@ const StatusDots = ({ status }) => {
 };
 
 /* ── BillRows component ────────────────────────── */
+const DomainPill = ({ domain }) => {
+  const d = DOMAIN[domain] || { a:'var(--mid-gray)', bg:'var(--gray-bg)', t:'var(--text-muted)', label: domain };
+  return <span>Domain: <Pill label={d.label} a={d.a} bg={d.bg} t={d.t} sm /></span>;
+};
+
+const RegModeTag = ({ mode }) => {
+  const colors = {
+    prohibition: {bg:'var(--red-bg)',t:'var(--red-text)'},
+    disclosure:  {bg:'var(--light-blue)',t:'#1e3a5f'},
+    licensing:   {bg:'var(--purple-bg)',t:'var(--purple-text)'},
+    taxation:    {bg:'var(--amber-bg)',t:'var(--amber-text)'},
+    enforcement: {bg:'var(--orange-bg)',t:'var(--orange-text)'},
+    study:       {bg:'var(--gray-bg)',t:'var(--text-muted)'},
+  };
+  const c = colors[mode] || colors.study;
+  return <span style={{fontSize:9,padding:'1px 6px',borderRadius:20,fontWeight:600,
+    backgroundColor:c.bg,color:c.t,border:'none',letterSpacing:'0.04em',
+    textTransform:'uppercase',whiteSpace:'nowrap'}}>{mode}</span>;
+};
+
+const PassageBar = ({ p, rationale }) => {
+  const pct = Math.round((p||0)*100);
+  const color = pct >= 20 ? 'var(--green)' : pct >= 10 ? 'var(--orange)' : 'var(--red)';
+  return (
+    <div title={rationale || ''} style={{display:'flex',alignItems:'center',gap:6}}>
+      <div style={{flex:1,height:5,backgroundColor:'var(--border)',borderRadius:3,overflow:'hidden'}}>
+        <div style={{width:`${pct}%`,height:'100%',backgroundColor:color,
+          borderRadius:3,transition:'width 0.3s'}} />
+      </div>
+      <span style={{fontSize:10,fontWeight:600,color,minWidth:26,textAlign:'right'}}>{pct}%</span>
+    </div>
+  );
+};
+
 const BillRows = ({ bill: b, expanded, onToggle, editMode, onUpdate }) => {
   const c = CAT[b.category] || { bg:'var(--gray-bg)', t:'var(--text-muted)', a:'var(--mid-gray)' };
-  const d = DOMAIN[b.domain] || { a:'var(--mid-gray)', bg:'var(--gray-bg)', t:'var(--text-muted)' };
+  const d = DOMAIN[b.domain] || { a:'var(--mid-gray)', bg:'var(--gray-bg)', t:'var(--text-muted)', label: b.domain };
   const p = PARTY[b.party] || PARTY.R;
   const ch = CHAMBERS[b.chamber] || '?';
-  const dt = b.introduced.slice(5).replace('-','/');
+  const dt = b.introduced ? b.introduced.slice(5).replace('-','/') : '—';
   const sel = expanded;
 
   const rowBase = {
@@ -363,6 +451,8 @@ const BillRows = ({ bill: b, expanded, onToggle, editMode, onUpdate }) => {
         <td style={{padding:'7px 8px'}}>
           <span style={{fontWeight:600,fontSize:13}}>{b.id}</span>
           <span style={{fontSize:12,marginLeft:6,color:'var(--text)'}}>{b.title}</span>
+          {b.isNew && <span style={{marginLeft:5,fontSize:9,padding:'1px 5px',borderRadius:20,
+            backgroundColor:'var(--red)',color:'#fff',fontWeight:600}}>NEW</span>}
         </td>
         <td style={{padding:'7px 8px',fontSize:11,color:'var(--text-muted)'}}>{b.sponsor}</td>
         <td style={{padding:'7px 8px'}}>
@@ -380,7 +470,7 @@ const BillRows = ({ bill: b, expanded, onToggle, editMode, onUpdate }) => {
         </td>
       </tr>
 
-      {/* Row 2 — summary + teeth card */}
+      {/* Row 2 — summary card */}
       <tr style={{...rowBase, borderBottom: expanded ? 'none' : '1px solid var(--border)'}}
           onClick={() => onToggle(b.id)}>
         <td />
@@ -403,49 +493,87 @@ const BillRows = ({ bill: b, expanded, onToggle, editMode, onUpdate }) => {
         <td />
       </tr>
 
-      {/* Row 3 — expanded detail + edit controls */}
+      {/* Row 3 — expanded detail + metadata + analysis */}
       {expanded && (
         <tr style={{...rowBase, borderBottom:'1px solid var(--border)'}}>
           <td />
-          <td colSpan={5} style={{padding:'0 8px 10px'}}>
+          <td colSpan={5} style={{padding:'0 8px 12px'}}>
             <div style={{display:'grid',gridTemplateColumns:'2fr 1fr 1fr',gap:10,fontSize:12}}>
-              <div style={{lineHeight:1.55}}>
-                <div style={{fontSize:10,fontWeight:600,color:'var(--text-muted)',marginBottom:3,
-                  textTransform:'uppercase',letterSpacing:'0.04em'}}>Detail</div>
-                <div style={{color:'var(--text)'}}>{b.detail}</div>
-              </div>
+
+              {/* Col 1 — detail text */}
               <div>
-                <div style={{fontSize:10,fontWeight:600,color:'var(--text-muted)',marginBottom:3,
-                  textTransform:'uppercase',letterSpacing:'0.04em'}}>Info</div>
-                <div style={{fontSize:11,color:'var(--text-muted)',lineHeight:1.7}}>
-                  Introduced: {b.introduced}<br/>
-                  Chamber: {b.chamber}<br/>
-                  Party: {b.party}<br/>
-                  Domain: <Pill label={d.label || b.domain} a={d.a} bg={d.bg} t={d.t} sm />
+                <div style={{fontSize:10,fontWeight:600,color:'var(--text-muted)',marginBottom:4,
+                  textTransform:'uppercase',letterSpacing:'0.04em'}}>Legislative detail</div>
+                <div style={{color:'var(--text)',lineHeight:1.55,marginBottom:10}}>{b.detail}</div>
+                {b.regulatoryMode?.length > 0 && (
+                  <div style={{display:'flex',gap:4,flexWrap:'wrap',marginBottom:8}}>
+                    <span style={{fontSize:10,color:'var(--text-muted)',alignSelf:'center'}}>Mode:</span>
+                    {b.regulatoryMode.map(m => <RegModeTag key={m} mode={m} />)}
+                  </div>
+                )}
+                {b.cosponsors && (
+                  <div style={{fontSize:11,color:'var(--text-muted)',lineHeight:1.5}}>
+                    <span style={{fontWeight:500,color:'var(--text)'}}>Co-sponsors: </span>{b.cosponsors}
+                  </div>
+                )}
+              </div>
+
+              {/* Col 2 — facts */}
+              <div style={{backgroundColor:'var(--bg-secondary)',borderRadius:5,padding:'10px 12px'}}>
+                <div style={{fontSize:10,fontWeight:600,color:'var(--text-muted)',marginBottom:6,
+                  textTransform:'uppercase',letterSpacing:'0.04em'}}>Factual record</div>
+                <div style={{fontSize:11,color:'var(--text-muted)',lineHeight:1.8}}>
+                  <div><span style={{fontWeight:500,color:'var(--text)'}}>Introduced:</span> {b.introduced}</div>
+                  <div><span style={{fontWeight:500,color:'var(--text)'}}>Chamber:</span> {b.chamber}</div>
+                  {b.committee && <div style={{lineHeight:1.5}}><span style={{fontWeight:500,color:'var(--text)'}}>Committee:</span> {b.committee}</div>}
+                  <div style={{marginTop:4}}><Pill label={d.label || b.domain} a={d.a} bg={d.bg} t={d.t} sm /></div>
+                  {b.confidence != null && (
+                    <div style={{marginTop:4,fontSize:10,color:'var(--mid-gray)'}}>
+                      Confidence: {Math.round(b.confidence*100)}%
+                    </div>
+                  )}
+                  {b.sourceUrl && (
+                    <div style={{marginTop:6}}>
+                      <a href={b.sourceUrl} target="_blank" rel="noopener noreferrer"
+                        style={{fontSize:11,color:'var(--blue)',display:'inline-flex',alignItems:'center',gap:3}}>
+                        Source ↗
+                      </a>
+                    </div>
+                  )}
                 </div>
               </div>
-              {editMode && (
-                <div style={{display:'flex',flexDirection:'column',gap:6}}>
-                  <div style={{fontSize:10,fontWeight:600,color:'var(--text-muted)',
-                    textTransform:'uppercase',letterSpacing:'0.04em'}}>Edit</div>
-                  <select value={b.status}
-                    onChange={e => onUpdate(b.id, 'status', e.target.value)}>
-                    {STAGES.map(s => <option key={s} value={s}>{s}</option>)}
-                    <option value="Dead">Dead</option>
-                  </select>
-                  <select value={b.domain || 'prediction-markets'}
-                    onChange={e => onUpdate(b.id, 'domain', e.target.value)}>
-                    {Object.entries(DOMAIN).map(([k,v]) =>
-                      <option key={k} value={k}>{v.label}</option>)}
-                  </select>
-                  <input type="number" min={0} max={100} placeholder="P(pass) %"
-                    value={b.pPass || ''}
-                    onChange={e => onUpdate(b.id, 'pPass', e.target.value)} />
-                  <textarea rows={2} placeholder="Notes..."
-                    value={b.notes || ''}
-                    onChange={e => onUpdate(b.id, 'notes', e.target.value)} />
+
+              {/* Col 3 — analysis */}
+              <div style={{backgroundColor:'var(--amber-bg)',borderRadius:5,padding:'10px 12px',
+                border:'1px solid var(--border)'}}>
+                <div style={{fontSize:10,fontWeight:600,color:'var(--amber-text)',marginBottom:6,
+                  textTransform:'uppercase',letterSpacing:'0.04em'}}>Policy analysis</div>
+                <div style={{fontSize:10,fontWeight:500,color:'var(--text-muted)',marginBottom:3}}>
+                  Passage probability
                 </div>
-              )}
+                <PassageBar p={b.passageProbability} rationale={b.passageRationale} />
+                {b.passageRationale && (
+                  <div style={{fontSize:11,color:'var(--text-muted)',lineHeight:1.5,marginTop:6}}>
+                    {b.passageRationale}
+                  </div>
+                )}
+                {editMode && (
+                  <div style={{marginTop:8,display:'flex',flexDirection:'column',gap:4}}>
+                    <select value={b.status}
+                      onChange={e => onUpdate(b.id, 'status', e.target.value)}>
+                      {STAGES.map(s => <option key={s} value={s}>{s}</option>)}
+                      <option value="Dead">Dead</option>
+                    </select>
+                    <input type="number" min={0} max={100} placeholder="P(pass) 0-100"
+                      value={b.passageProbability != null ? Math.round(b.passageProbability*100) : ''}
+                      onChange={e => onUpdate(b.id, 'passageProbability', parseFloat(e.target.value)/100)} />
+                    <textarea rows={2} placeholder="Notes..."
+                      value={b.notes || ''}
+                      onChange={e => onUpdate(b.id, 'notes', e.target.value)} />
+                  </div>
+                )}
+              </div>
+
             </div>
           </td>
           <td />
@@ -454,7 +582,6 @@ const BillRows = ({ bill: b, expanded, onToggle, editMode, onUpdate }) => {
     </React.Fragment>
   );
 };
-
 /* ── TimelineRow component ─────────────────────── */
 const TimelineRow = ({ entry: e, expanded, onToggle, editMode, onUpdate }) => {
   const ag = AGENCY_META[e.agency] || { bg:'var(--gray-bg)', t:'var(--text-muted)', a:'var(--mid-gray)' };
@@ -541,10 +668,7 @@ const TimelineRow = ({ entry: e, expanded, onToggle, editMode, onUpdate }) => {
                       Date: {e.date}<br/>
                       Agency: {e.agency}<br/>
                       Action: {e.action}<br/>
-                      {e.domain ? (() => {
-                        const d = DOMAIN[e.domain] || { a:'var(--mid-gray)', bg:'var(--gray-bg)', t:'var(--text-muted)', label: e.domain };
-                        return <><span>Domain: </span><Pill label={d.label} a={d.a} bg={d.bg} t={d.t} sm /></>;
-                      })() : null}
+                      {e.domain && <DomainPill domain={e.domain} />}
                       {e.source === 'manual' && (
                         <><br/><span style={{fontSize:10,color:'var(--text-muted)',
                           fontStyle:'italic'}}>manually entered</span></>
@@ -1483,6 +1607,340 @@ function extractJsonArray(text) {
 }
 
 /* ── app ───────────────────────────────────────── */
+/* ── Intelligence Tab — Tier 3 ─────────────────── */
+
+/* State regulatory activity data */
+const STATE_HEATMAP_DATA = [
+  { state:'AZ', name:'Arizona',    actions:{ 'prediction-markets':3, 'crypto':1 }, notes:'Criminal charges against Kalshi; CFTC sued state Apr 2026' },
+  { state:'CT', name:'Connecticut',actions:{ 'prediction-markets':2 }, notes:'Cease-and-desist to Kalshi/Polymarket; CFTC sued state Apr 2026' },
+  { state:'IL', name:'Illinois',   actions:{ 'prediction-markets':2, 'banking':2 }, notes:'Cease-and-desist orders; Interchange Fee Act; CFTC sued state Apr 2026' },
+  { state:'NV', name:'Nevada',     actions:{ 'prediction-markets':1 }, notes:'Temporary restraining order blocking Kalshi sports contracts' },
+  { state:'NJ', name:'New Jersey', actions:{ 'prediction-markets':1 }, notes:'State action against prediction market operators' },
+  { state:'MD', name:'Maryland',   actions:{ 'prediction-markets':1 }, notes:'State action against prediction market operators' },
+  { state:'NY', name:'New York',   actions:{ 'prediction-markets':1 }, notes:'Legislative activity; Torres H.R.7004 lead' },
+  { state:'MA', name:'Massachusetts',actions:{ 'prediction-markets':1 }, notes:'Legislative activity; Warren/Moulton/McGovern involvement' },
+  { state:'WA', name:'Washington', actions:{ 'prediction-markets':1 }, notes:'Sued Kalshi over sports markets (Mar 28)' },
+  { state:'CA', name:'California', actions:{ 'prediction-markets':1 }, notes:'Newsom executive order restricting state officials (Mar 27)' },
+  { state:'MT', name:'Montana',    actions:{ 'prediction-markets':1 }, notes:'State action against prediction market operators' },
+  { state:'OH', name:'Ohio',       actions:{ 'prediction-markets':1 }, notes:'State action against prediction market operators' },
+  { state:'TN', name:'Tennessee',  actions:{ 'prediction-markets':1 }, notes:'State action against prediction market operators' },
+];
+
+const DOMAIN_COLORS = {
+  'prediction-markets': '#dc2626',
+  'crypto': '#1d6fa4',
+  'banking': '#d97706',
+  'fintech': '#7c3aed',
+  'securities': '#0891b2',
+};
+
+const PriorityMatrix = ({ bills }) => {
+  const w = 480, h = 320, pad = {l:48,r:20,t:24,b:40};
+  const pw = w - pad.l - pad.r;
+  const ph = h - pad.t - pad.b;
+
+  const maxImpact = 5;
+  const x = prob => pad.l + prob * pw;
+  const y = imp  => pad.t + ph - (imp / maxImpact) * ph;
+
+  // Gridlines
+  const xTicks = [0, 0.05, 0.10, 0.15, 0.20, 0.25];
+  const yTicks = [1, 2, 3, 4, 5];
+
+  const [hovered, setHovered] = React.useState(null);
+
+  return (
+    <div>
+      <div style={{fontSize:10,fontWeight:600,color:'var(--text-muted)',marginBottom:8,
+        textTransform:'uppercase',letterSpacing:'0.06em'}}>
+        Priority Matrix — Passage Probability × Policy Impact
+      </div>
+      <div style={{fontSize:11,color:'var(--text-muted)',marginBottom:12,lineHeight:1.5}}>
+        Bubble size reflects impact score (1–5). Hover for rationale. Most prediction market bills cluster at low probability despite meaningful policy impact.
+      </div>
+      <svg viewBox={`0 0 ${w} ${h}`} style={{width:'100%',maxWidth:w,overflow:'visible'}}>
+        {/* Grid */}
+        {xTicks.map(t => (
+          <g key={`xt-${t}`}>
+            <line x1={x(t)} y1={pad.t} x2={x(t)} y2={pad.t+ph}
+              stroke="var(--border)" strokeWidth={0.5} strokeDasharray={t===0?'none':'3,3'}/>
+            <text x={x(t)} y={pad.t+ph+14} textAnchor="middle" fontSize={9} fill="var(--text-muted)">
+              {Math.round(t*100)}%
+            </text>
+          </g>
+        ))}
+        {yTicks.map(t => (
+          <g key={`yt-${t}`}>
+            <line x1={pad.l} y1={y(t)} x2={pad.l+pw} y2={y(t)}
+              stroke="var(--border)" strokeWidth={0.5} strokeDasharray="3,3"/>
+            <text x={pad.l-6} y={y(t)+4} textAnchor="end" fontSize={9} fill="var(--text-muted)">{t}</text>
+          </g>
+        ))}
+
+        {/* Axis labels */}
+        <text x={pad.l+pw/2} y={h-4} textAnchor="middle" fontSize={10} fill="var(--text-muted)">
+          Passage probability →
+        </text>
+        <text x={12} y={pad.t+ph/2} textAnchor="middle" fontSize={10} fill="var(--text-muted)"
+          transform={`rotate(-90, 12, ${pad.t+ph/2})`}>
+          Impact ↑
+        </text>
+
+        {/* Quadrant shading */}
+        <rect x={x(0.10)} y={pad.t} width={pw-pw*0.10} height={ph/2}
+          fill="var(--green)" opacity={0.04}/>
+        <text x={x(0.18)} y={pad.t+10} fontSize={8} fill="var(--green)" opacity={0.6}>
+          High impact + viable
+        </text>
+
+        {/* Bills */}
+        {bills.map(b => {
+          const prob = b.passageProbability || 0;
+          const imp  = b.impact || 2;
+          const r    = 5 + imp * 2.5;
+          const cx   = x(Math.min(prob, 0.25));
+          const cy   = y(imp);
+          const party = PARTY[b.party] || PARTY.D;
+          const isHov = hovered === b.id;
+
+          return (
+            <g key={b.id} style={{cursor:'pointer'}}
+               onMouseEnter={() => setHovered(b.id)}
+               onMouseLeave={() => setHovered(null)}>
+              <circle cx={cx} cy={cy} r={r}
+                fill={party.a} opacity={isHov ? 0.9 : 0.55}
+                stroke={party.a} strokeWidth={isHov ? 2 : 1}/>
+              <text x={cx} y={cy-r-4} textAnchor="middle" fontSize={8}
+                fontWeight={isHov?'600':'400'} fill="var(--text)">
+                {b.id.split(' ')[0].replace('/','/')}
+              </text>
+              {isHov && (
+                <g>
+                  <rect x={cx-90} y={cy+r+4} width={180} height={46} rx={4}
+                    fill="var(--bg)" stroke="var(--border)" strokeWidth={1}/>
+                  <text x={cx-82} y={cy+r+16} fontSize={8} fontWeight="600" fill="var(--text)">
+                    {b.id}
+                  </text>
+                  <text x={cx-82} y={cy+r+26} fontSize={8} fill="var(--text-muted)">
+                    {(b.title||'').slice(0,34)}{(b.title||'').length>34?'…':''}
+                  </text>
+                  <text x={cx-82} y={cy+r+36} fontSize={7} fill="var(--text-muted)">
+                    {(b.passageRationale||'').slice(0,52)}{(b.passageRationale||'').length>52?'…':''}
+                  </text>
+                  <text x={cx-82} y={cy+r+46} fontSize={7} fill="var(--text-muted)">
+                    {(b.passageRationale||'').slice(52,104)}{(b.passageRationale||'').length>104?'…':''}
+                  </text>
+                </g>
+              )}
+            </g>
+          );
+        })}
+
+        {/* Legend */}
+        {[['D','var(--blue)'],['R','var(--red)'],['Bipartisan','var(--purple)']].map(([label, color], i) => (
+          <g key={label} transform={`translate(${w-90}, ${pad.t + i*14})`}>
+            <circle cx={5} cy={-3} r={5} fill={color} opacity={0.6}/>
+            <text x={14} y={1} fontSize={9} fill="var(--text-muted)">{label}</text>
+          </g>
+        ))}
+      </svg>
+    </div>
+  );
+};
+
+const EscalationTimeline = ({ bills, timeline }) => {
+  const events = [
+    // Legislation events from bills
+    ...bills.map(b => ({
+      type:'legislation', date:b.introduced, label:b.id,
+      title:b.title, party:b.party, prob:b.passageProbability||0
+    })),
+    // Agency events
+    ...timeline.map(e => ({ type:'agency', date:e.date, label:e.agency, title:e.title, action:e.action })),
+    // Known court events
+    { type:'court', date:'2026-04-02', label:'CFTC v. AZ/CT/IL', title:'CFTC files lawsuits against three states asserting exclusive federal jurisdiction over prediction markets' },
+  ].sort((a,b) => a.date.localeCompare(b.date));
+
+  const typeColors = {
+    legislation: { bg:'var(--purple-bg)', t:'var(--purple-text)', a:'var(--purple)', icon:'⚖️' },
+    agency:      { bg:'var(--teal-bg)',   t:'var(--teal-text)',   a:'var(--teal)',   icon:'🏛' },
+    court:       { bg:'var(--red-bg)',    t:'var(--red-text)',    a:'var(--red)',    icon:'⚡' },
+  };
+
+  return (
+    <div>
+      <div style={{fontSize:10,fontWeight:600,color:'var(--text-muted)',marginBottom:8,
+        textTransform:'uppercase',letterSpacing:'0.06em'}}>
+        Regulatory Escalation — Legislation → Agency → Courts
+      </div>
+      <div style={{display:'flex',gap:10,marginBottom:12,flexWrap:'wrap'}}>
+        {Object.entries(typeColors).map(([type, c]) => (
+          <span key={type} style={{display:'inline-flex',alignItems:'center',gap:5,
+            fontSize:11,padding:'3px 10px',borderRadius:20,
+            backgroundColor:c.bg,color:c.t}}>
+            {c.icon} {type.charAt(0).toUpperCase()+type.slice(1)}
+          </span>
+        ))}
+      </div>
+      <div style={{position:'relative',paddingLeft:24}}>
+        {/* Vertical line */}
+        <div style={{position:'absolute',left:8,top:0,bottom:0,width:2,
+          backgroundColor:'var(--border)'}}/>
+        {events.map((ev, i) => {
+          const c = typeColors[ev.type];
+          return (
+            <div key={`${ev.date}-${i}`} style={{position:'relative',marginBottom:10}}>
+              <div style={{position:'absolute',left:-20,top:3,width:14,height:14,
+                borderRadius:'50%',backgroundColor:c.a,
+                display:'flex',alignItems:'center',justifyContent:'center',
+                fontSize:7,color:'white',fontWeight:700,zIndex:1}}>
+                {ev.type==='legislation'?'L':ev.type==='agency'?'A':'C'}
+              </div>
+              <div style={{backgroundColor:'var(--bg-secondary)',borderRadius:5,
+                padding:'6px 10px',border:`1px solid ${c.a}30`}}>
+                <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:2}}>
+                  <span style={{fontSize:10,color:'var(--text-muted)',fontFamily:'monospace',flexShrink:0}}>
+                    {ev.date}
+                  </span>
+                  <span style={{fontSize:10,padding:'1px 6px',borderRadius:10,
+                    backgroundColor:c.bg,color:c.t,fontWeight:600,flexShrink:0}}>
+                    {ev.label}
+                  </span>
+                  {ev.type==='legislation' && ev.prob != null && (
+                    <span style={{fontSize:10,color:'var(--text-muted)'}}>
+                      P(pass)={Math.round(ev.prob*100)}%
+                    </span>
+                  )}
+                </div>
+                <div style={{fontSize:11,color:'var(--text)',lineHeight:1.45}}>
+                  {ev.title.length > 120 ? ev.title.slice(0,120)+'…' : ev.title}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+const StateHeatmap = () => {
+  const [tooltip, setTooltip] = React.useState(null);
+  const domains = ['prediction-markets','crypto','banking','fintech'];
+  const maxActions = Math.max(...STATE_HEATMAP_DATA.map(s =>
+    Object.values(s.actions).reduce((a,b)=>a+b,0)));
+
+  return (
+    <div>
+      <div style={{fontSize:10,fontWeight:600,color:'var(--text-muted)',marginBottom:8,
+        textTransform:'uppercase',letterSpacing:'0.06em'}}>
+        State Regulatory Activity Heatmap
+      </div>
+      <div style={{fontSize:11,color:'var(--text-muted)',marginBottom:12}}>
+        States that have taken formal action against prediction markets or related regulation. As of April 2026, 11+ states have issued orders or filed suit.
+      </div>
+      <div style={{overflowX:'auto'}}>
+        <table style={{fontSize:11,borderCollapse:'collapse',width:'100%'}}>
+          <thead>
+            <tr style={{backgroundColor:'var(--bg-secondary)'}}>
+              <th style={{padding:'6px 10px',textAlign:'left',fontSize:10,fontWeight:600,
+                color:'var(--text-muted)',borderBottom:'1px solid var(--border)'}}>State</th>
+              {domains.map(dom => (
+                <th key={dom} style={{padding:'6px 10px',textAlign:'center',fontSize:10,fontWeight:600,
+                  color: DOMAIN_COLORS[dom]||'var(--text-muted)',
+                  borderBottom:'1px solid var(--border)',whiteSpace:'nowrap'}}>
+                  {DOMAIN[dom]?.label?.split(' ')[0] || dom}
+                </th>
+              ))}
+              <th style={{padding:'6px 10px',textAlign:'center',fontSize:10,fontWeight:600,
+                color:'var(--text-muted)',borderBottom:'1px solid var(--border)'}}>Total</th>
+              <th style={{padding:'6px 10px',textAlign:'left',fontSize:10,fontWeight:600,
+                color:'var(--text-muted)',borderBottom:'1px solid var(--border)'}}>Key action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[...STATE_HEATMAP_DATA]
+              .sort((a,b) => Object.values(b.actions).reduce((x,y)=>x+y,0) -
+                             Object.values(a.actions).reduce((x,y)=>x+y,0))
+              .map(s => {
+                const total = Object.values(s.actions).reduce((a,b)=>a+b,0);
+                const intensity = total / (maxActions||1);
+                return (
+                  <tr key={s.state} style={{borderBottom:'1px solid var(--border)'}}>
+                    <td style={{padding:'6px 10px'}}>
+                      <span style={{fontWeight:600,color:'var(--text)'}}>{s.state}</span>
+                      <span style={{fontSize:10,color:'var(--text-muted)',marginLeft:5}}>{s.name}</span>
+                    </td>
+                    {domains.map(dom => {
+                      const count = s.actions[dom] || 0;
+                      const color = DOMAIN_COLORS[dom]||'var(--mid-gray)';
+                      return (
+                        <td key={dom} style={{padding:'6px 10px',textAlign:'center'}}>
+                          {count > 0 ? (
+                            <span style={{display:'inline-flex',alignItems:'center',justifyContent:'center',
+                              width:22,height:22,borderRadius:'50%',
+                              backgroundColor:color+'33',color:color,
+                              fontWeight:700,fontSize:11}}>
+                              {count}
+                            </span>
+                          ) : (
+                            <span style={{color:'var(--border)'}}>—</span>
+                          )}
+                        </td>
+                      );
+                    })}
+                    <td style={{padding:'6px 10px',textAlign:'center'}}>
+                      <div style={{display:'inline-flex',alignItems:'center',justifyContent:'center',
+                        width:24,height:24,borderRadius:'50%',
+                        backgroundColor:`rgba(220,38,38,${0.15+intensity*0.6})`,
+                        color:'var(--red)',fontWeight:700,fontSize:12}}>
+                        {total}
+                      </div>
+                    </td>
+                    <td style={{padding:'6px 10px',fontSize:11,color:'var(--text-muted)',maxWidth:220}}>
+                      {s.notes}
+                    </td>
+                  </tr>
+                );
+              })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+const IntelligenceTab = ({ bills, timeline }) => {
+  const panelStyle = {
+    backgroundColor:'var(--bg)',border:'1px solid var(--border)',
+    borderRadius:8,padding:'16px 18px',marginBottom:14,
+  };
+
+  return (
+    <div style={{padding:'14px'}}>
+      <div style={{marginBottom:14}}>
+        <div style={{fontSize:13,fontWeight:600,color:'var(--text)',marginBottom:4}}>
+          Policy Intelligence — Prediction Markets Regulation
+        </div>
+        <div style={{fontSize:12,color:'var(--text-muted)',lineHeight:1.6}}>
+          Analysis layer separating factual tracking from policy assessment. Passage probabilities reflect Republican control of both chambers, current committee dynamics, and sponsorship signals as of April 2026. These are analytical estimates, not predictions.
+        </div>
+      </div>
+      <div style={panelStyle}>
+        <PriorityMatrix bills={bills} />
+      </div>
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
+        <div style={panelStyle}>
+          <EscalationTimeline bills={bills} timeline={timeline} />
+        </div>
+        <div style={panelStyle}>
+          <StateHeatmap />
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const App = () => {
   const [activeTab, setActiveTab] = React.useState('bills');
   const [editMode, setEditMode] = React.useState(false);
@@ -1969,7 +2427,7 @@ const App = () => {
             Financial Regulation Tracker
           </span>
           <span style={{fontSize:10,padding:'2px 8px',borderRadius:20,
-            backgroundColor:'#1d3a56',color:'#93c5fd',marginLeft:4}}>v1.3.1</span>
+            backgroundColor:'#1d3a56',color:'#93c5fd',marginLeft:4}}>v2.0</span>
         </div>
         <div style={{display:'flex',alignItems:'center',gap:10}}>
           <span style={{fontSize:10,color:'#6b7280'}}>Updated: {ts}</span>
@@ -2170,7 +2628,8 @@ const App = () => {
         backgroundColor:'var(--bg-secondary)',paddingLeft:14}}>
         {[['bills','Congressional Bills',bills.length],
           ['timeline','Regulatory Timeline',timeline.length],
-          ['signal','Regulatory Signal',signals.length]].map(([id,label,count]) =>
+          ['signal','Regulatory Signal',signals.length],
+          ['intel','Policy Intelligence','']].map(([id,label,count]) =>
           <button key={id} onClick={() => setActiveTab(id)}
             style={{padding:'8px 18px',fontSize:12,fontWeight:500,
               cursor:'pointer',border:'none',
@@ -2457,6 +2916,11 @@ const App = () => {
         </div>
       )}
 
+      {/* INTELLIGENCE TAB */}
+      {activeTab === 'intel' && (
+        <IntelligenceTab bills={bills} timeline={timeline} />
+      )}
+
       {/* FOOTER */}
       <div style={{padding:'10px 14px',borderTop:'1px solid var(--border)',
         display:'flex',justifyContent:'space-between',flexWrap:'wrap',gap:4,
@@ -2469,7 +2933,9 @@ const App = () => {
             ? `${filteredBills.length} of ${bills.length} bills shown`
             : activeTab === 'timeline'
             ? `${filteredTl.length} of ${timeline.length} entries shown`
-            : `${filteredSignals.length} of ${signals.length} signals shown`}
+            : activeTab === 'signal'
+            ? `${filteredSignals.length} of ${signals.length} signals shown`
+            : `${bills.length} bills · ${timeline.length} timeline entries`}
         </span>
       </div>
 
