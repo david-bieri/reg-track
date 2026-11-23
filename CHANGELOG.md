@@ -2,6 +2,13 @@
 
 All notable changes to the Financial Regulation Tracker are documented in this file.
 
+## [1.3.1] — 2026-11-23
+
+### Fixed
+- Live refresh had failed since 15 Jun 2026: every call used `claude-sonnet-4-20250514`, which Anthropic retired. Model is now `claude-sonnet-5-5`, set once in `CLAUDE_API`.
+- Calls now send the required `anthropic-version` header (shared `claudeHeaders()`).
+- API key moved from localStorage to sessionStorage (cleared when the tab closes); a key saved earlier is moved over once.
+
 ## [1.3] — 2026-04-01
 
 ### Added

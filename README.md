@@ -10,7 +10,7 @@ and federal regulatory actions.
   fintech, financial stability
 - 8 seed bills with full text, sponsors, category, status pipeline
 - 10 seed regulatory timeline entries (CFTC, Fed, DOJ, SEC, States)
-- Live refresh via Anthropic API + web search (tab-aware)
+- Live refresh via Anthropic API + web search (tab-aware); model `claude-sonnet-5-5`, set once in `CLAUDE_API`
 - Add Bill modal with AI pre-fill from bill name, URL, or description
 - Filter by domain, category, party (bills); agency, action type (timeline)
 - Edit mode: update status, P(pass) probability, notes
